@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">SensorMeasurementApp</string>
+    <string name="configMenuItemString">Configuration</string>
+    <string name="shapesConfigTitle">Shapes:</string>
+    <string name="rotationConfigTitle">The degree to which objects can be rotated:</string>
+    <string name="circlesCBText">Circles</string>
+    <string name="squaresCBText">Squares</string>
+    <string name="trianglesCBText">Triangles</string>
+    <string name="sizeConfigTitle">Define bounds for size of generated objects:</string>
+    <string name="maxSizeText">Max. size:</string>
+    <string name="minSizeText">Min. size:</string>
+    <string name="maxRotationText">Max. rotation (°):</string>
+    <string name="minRotationText">Min. rotation (°):</string>
+    <string name="SessionNameText">User/session name:</string>
+
+    <string name="shapes_cb_file_key">shapesCB</string>
+    <string name="size_max_bound_file_key">maxSizeET</string>
+    <string name="size_min_bound_file_key">minSizeET</string>
+    <string name="rotation_max_bound_file_key">maxRotationET</string>
+    <string name="rotation_min_bound_file_key">minRotationET</string>
+    <string name="session_name_file_key">sessionNameET</string>
+</resources>
