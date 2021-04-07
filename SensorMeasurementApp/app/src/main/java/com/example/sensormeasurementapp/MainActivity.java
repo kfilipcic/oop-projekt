@@ -55,24 +55,44 @@ public class MainActivity extends AppCompatActivity {
             File file = new File(path + "/" + sessionName +".csv");
             // If file doesn't exist, then create it
             if (!file.exists()) {
-                content = "timeStamp,sessionName,objectType,rectLeft,rectTop,rectRight,rectBottom,circleRadius,minSize,maxSize,minRotation,maxRotation,targetHit,tapTime\n";
+                content = "timeStamp,sessionName,objectType,xCenter,yCenter,radius,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,isTargetHit,tapTime(ms)\n";
+                //content = "timeStamp,sessionName,objectType,rectLeft,rectTop,rectRight,rectBottom,circleRadius,minSize,maxSize,minRotation,maxRotation,targetHit,tapTime(ms)\n";
                 file.createNewFile();
                 FileWriter fw = new FileWriter(file.getAbsoluteFile());
                 BufferedWriter bw = new BufferedWriter(fw);
                 bw.write(content);
                 bw.close();
             }
-            // If object was a circle, clear previous rect values
-            // (assign -1 value)
-            if (myCanvas.objectType == 0) {
-                myCanvas.setRndLeft(-1);
-                myCanvas.setRndTop(-1);
-                myCanvas.setRndRight(-1);
-                myCanvas.setRndBottom(-1);
+            String circleRadiusValue = "null";
+            String centerXString = "null";
+            String centerYString = "null";
+            String objectTypeString = "null";
+            // Create new log record accordingly depending on
+            // last object type
+            switch (myCanvas.objectType) {
+                // Circle
+                case 0:
+                    circleRadiusValue = String.valueOf(myCanvas.circleRadius);
+                    centerXString = String.valueOf(myCanvas.rndCircleX);
+                    centerYString = String.valueOf(myCanvas.rndCircleY);
+
+                    objectTypeString = "circle";
+                    break;
+                // Rectangle
+                case 1:
+                    int squareSideLength = myCanvas.getRndBottom() - myCanvas.getRndTop();
+                    circleRadiusValue = String.valueOf(squareSideLength * Math.sqrt(2));
+                    centerXString = String.valueOf(myCanvas.getRndLeft() + (squareSideLength/2));
+                    centerYString = String.valueOf(myCanvas.getRndTop() + (squareSideLength/2));
+
+                    objectTypeString = "square";
+                    break;
             }
-            content = currentDateAndTime + "," + sessionName + "," + String.valueOf(myCanvas.objectType) + "," + String.valueOf(myCanvas.getRndLeft()) + ","
-                    + String.valueOf(myCanvas.getRndTop()) + "," + String.valueOf(myCanvas.getRndRight()) + "," + String.valueOf(myCanvas.getRndBottom()) + ","
-                    + String.valueOf(myCanvas.circleRadius) + "," + String.valueOf(myCanvas.getMinBound()) + "," + String.valueOf(myCanvas.getMaxBound()) + ","
+
+            // Create new CSV record row as string with appropriate data
+            content = currentDateAndTime + "," + sessionName + "," + objectTypeString + ","
+                    + centerXString + "," + centerYString + "," + circleRadiusValue + ","
+                    + String.valueOf(myCanvas.getMinBound()) + "," + String.valueOf(myCanvas.getMaxBound()) + ","
                     + String.valueOf(myCanvas.getMinRotationDegree()) + "," + String.valueOf(myCanvas.getMaxRotationDegree()) + ","
                     + String.valueOf(myCanvas.getTargetHit()) + "," + String.valueOf(tapTime) + "\n";
 
@@ -227,10 +247,10 @@ public class MainActivity extends AppCompatActivity {
                                 drawNewRandomRect(x, y);
                                 break;
                         }
+                        logToCsvFile();
                         break;
                 }
                 //myCanvas.invalidate();
-                logToCsvFile();
                 return true;
             }
         });

@@ -1,8 +1,12 @@
 package com.example.sensormeasurementapp;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedDispatcher;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -66,12 +70,10 @@ public class ConfigurationActivity extends AppCompatActivity {
             ET.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    System.out.println("BEFORE TEXT CHANGED");
                 }
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    System.out.println("ON TEXT CHANGED");
                 }
 
                 @Override
@@ -119,8 +121,6 @@ public class ConfigurationActivity extends AppCompatActivity {
                             minRotationDegree = valueET;
                             break;
                     }
-                    System.out.println("AFTER TEXT CHANGED");
-                    System.out.println("finalI: " + finalI);
                 }
             });
         }
@@ -188,6 +188,84 @@ public class ConfigurationActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
+    }
+
+    private class SharedPreferencesAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            editor.commit();
+            return null;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage("Save these settings? Select Cancel to stay on this screen.");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Save",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        if (settingsValid()) {
+                            saveNewSettings();
+                            finish();
+                        } else {
+                            dialog.dismiss();
+
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(ConfigurationActivity.this);
+                            builder2.setMessage("Invalid settings! Input correct values and try again.");
+                            builder2.setCancelable(false);
+
+                            builder2.setPositiveButton(
+                                    "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.cancel();
+                                        }
+                                    }
+                            );
+                            AlertDialog alert2 = builder2.create();
+                            alert2.show();
+                        }
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "Don't Save",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        finish();
+                    }
+                });
+
+        builder1.setNeutralButton(
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+        alert11.setCancelable(false);
+    }
+
+    private Boolean settingsValid() {
+        if (maxBound >= minBound && maxRotationDegree >= minRotationDegree) {
+            return true;
+        }
+        return false;
+    }
+
+    private void saveNewSettings() {
         // Commit configuration / preferences data to Shared Preferences
         editor.putString(getString(R.string.shapes_cb_file_key), getEnabledShapes());
         editor.putInt(getString(R.string.size_max_bound_file_key), maxBound);
@@ -199,13 +277,5 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    private class SharedPreferencesAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            editor.commit();
-            return null;
-        }
-    }
 }
 
