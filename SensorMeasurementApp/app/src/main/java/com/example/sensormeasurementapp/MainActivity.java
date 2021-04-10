@@ -63,31 +63,16 @@ public class MainActivity extends AppCompatActivity {
                 bw.write(content);
                 bw.close();
             }
+
             String circleRadiusValue = "null";
             String centerXString = "null";
             String centerYString = "null";
             String objectTypeString = "null";
-            // Create new log record accordingly depending on
-            // last object type
-            switch (myCanvas.objectType) {
-                // Circle
-                case 0:
-                    circleRadiusValue = String.valueOf(myCanvas.circleRadius);
-                    centerXString = String.valueOf(myCanvas.rndCircleX);
-                    centerYString = String.valueOf(myCanvas.rndCircleY);
 
-                    objectTypeString = "circle";
-                    break;
-                // Rectangle
-                case 1:
-                    int squareSideLength = myCanvas.getRndBottom() - myCanvas.getRndTop();
-                    circleRadiusValue = String.valueOf(squareSideLength * Math.sqrt(2));
-                    centerXString = String.valueOf(myCanvas.getRndLeft() + (squareSideLength/2));
-                    centerYString = String.valueOf(myCanvas.getRndTop() + (squareSideLength/2));
-
-                    objectTypeString = "square";
-                    break;
-            }
+            circleRadiusValue = String.valueOf(myCanvas.getGeometryObject().getRadius());
+            centerXString = String.valueOf(myCanvas.getGeometryObject().getCenterX());
+            centerYString = String.valueOf(myCanvas.getGeometryObject().getCenterY());
+            objectTypeString = myCanvas.getGeometryObject().getObjectTypeString();
 
             // Create new CSV record row as string with appropriate data
             content = currentDateAndTime + "," + sessionName + "," + objectTypeString + ","
@@ -106,35 +91,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void drawNewRandomRect(float x, float y) {
-        RectF canvasRect = myCanvas.rndRect;
-        // User touched the object
-        if (x > canvasRect.left && x < canvasRect.right && y < canvasRect.bottom && y > canvasRect.top) {
-            myCanvas.setTargetHit(true);
-            //if (myCanvas.rndRect.contains(event.getRawX(), event.getRawY())) {
-            myCanvas.invalidate();
-            //myCanvas.randomizePaintColor();
-            myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.correct_bg));
-            // User failed to touch the object
-        } else {
-            myCanvas.setTargetHit(false);
-            myCanvas.invalidate();
-            //myCanvas.randomizePaintColor();
-            myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.incorrect_bg));
+    private void drawNewObject(float x, float y, int objectType) {
+        if (myCanvas.geometryObject == null) {
+            myCanvas.setGeometryObject(new GeometryObject());
         }
-        myCanvas.generateNewRandomRect(true);
-    }
-
-    private Boolean isInsideCircle(float xTouch, float yTouch) {
-        float distanceX = xTouch - myCanvas.rndCircleX; // ABSOLUTE VALUE!!!!1
-        float distanceY = yTouch - myCanvas.rndCircleY;
-        System.out.println("distanceX: " + distanceX + ", " + "distanceY: " + distanceY + ", " + "xTouch: " + xTouch + ", " + "yTouch: " + yTouch);
-        System.out.println(myCanvas.rndCircleX + ", " + myCanvas.rndCircleY);
-        return Math.sqrt(distanceX*distanceX + distanceY*distanceY) <= myCanvas.circleRadius;
-    }
-
-    private void drawNewRandomCircle(float x, float y) {
-        if (isInsideCircle(x, y)) {
+        if (myCanvas.geometryObject.isInside(x, y)) {
             myCanvas.setTargetHit(true);
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.correct_bg));
         } else {
@@ -142,7 +103,18 @@ public class MainActivity extends AppCompatActivity {
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.incorrect_bg));
         }
         myCanvas.invalidate();
-        myCanvas.generateNewRandomCircle();
+        switch (objectType) {
+            case 0:
+                myCanvas.setGeometryObject(new Circle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound()));
+                break;
+            case 1:
+                Boolean isSquare = true;
+                myCanvas.setGeometryObject(new Rectangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), isSquare));
+                break;
+            case 2:
+                myCanvas.setGeometryObject(new Triangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound()));
+                break;
+        }
     }
 
     public static ArrayList<Boolean> stringToBoolArray(String str){
@@ -237,16 +209,7 @@ public class MainActivity extends AppCompatActivity {
                             myCanvas.setObjectType(objectTypesRandom.get(rnd.nextInt(objectTypesRandom.size())));
                         }
 
-                        switch(myCanvas.getObjectType()) {
-                            // Rect
-                            case 0:
-                                drawNewRandomCircle(x, y);
-                                break;
-                            // Circle
-                            case 1:
-                                drawNewRandomRect(x, y);
-                                break;
-                        }
+                        drawNewObject(x, y, myCanvas.getObjectType());
                         logToCsvFile();
                         break;
                 }

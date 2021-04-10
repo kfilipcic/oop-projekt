@@ -4,9 +4,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import java.util.Random;
@@ -25,6 +25,7 @@ public class MyCanvas extends View {
     Boolean onCreate;
     Paint paint;
     int objectType;
+    GeometryObject geometryObject;
 
 
     public MyCanvas(Context context) {
@@ -32,7 +33,7 @@ public class MyCanvas extends View {
         rndRect = new RectF();
         onCreate = true;
         paint = new Paint();
-        objectType = 0;
+        objectType = -1;
     }
 
     public MyCanvas(Context context, AttributeSet attributeSet) {
@@ -40,56 +41,7 @@ public class MyCanvas extends View {
         rndRect = new RectF();
         onCreate = true;
         paint = new Paint();
-        objectType = 0;
-    }
-
-    public void generateNewRandomCircle() {
-        Random rnd = new Random();
-        int x = getWidth();
-        int y = getHeight();
-
-
-        do {
-            rndCircleX = 0 + rnd.nextFloat() * (x-0);
-            rndCircleY = 0 + rnd.nextFloat() * (y-0);
-            circleRadius = rnd.nextInt(maxBound - minBound + 1) + minBound;
-            System.out.println("x: " + x + " y: " + y);
-            System.out.println("circleRadius: " + circleRadius + " rndCircleX: " + rndCircleX + " rndCircleY: " + rndCircleY);
-        } while((rndCircleX + circleRadius) >= x || (rndCircleX - circleRadius) <= 0 || (rndCircleY + circleRadius) >= y || (rndCircleY - circleRadius) <= 0);
-    }
-
-    public void generateNewRandomRect(Boolean isSquare) {
-        Random rnd = new Random();
-        int x = getWidth();
-        int y = getHeight();
-
-        rndRight = rndBottom = 0;
-        //minRotationDegree = maxRotationDegree = 0;
-        //circleRadius = 100;
-
-        rndLeft = rnd.nextInt(x);
-        rndTop = rnd.nextInt(x);
-
-        //System.out.println("rndLeft: " + rndLeft);
-
-        while((rndRight-rndLeft) < minBound || (rndRight-rndLeft) > maxBound || rndRight >= x || (isSquare && rndTop + (rndRight-rndLeft) >= y)) {
-            rndLeft = rnd.nextInt(x);
-            rndTop = rnd.nextInt(x);
-            rndRight = rnd.nextInt(x - rndLeft) + rndLeft;
-            System.out.println("rndLeft: " + rndLeft + " rndRight: " + rndRight + " rndTop: " + rndTop);
-            System.out.println("minBound: " + minBound + " maxBound: " + maxBound);
-            System.out.println("stuck in rect while!");
-        }
-        if (isSquare) {
-            rndBottom = rndTop + (rndRight-rndLeft);
-        } else {
-            while((rndBottom-rndTop) < minBound || (rndBottom-rndTop) > maxBound || rndBottom >= y) {
-                System.out.println("stuck in rect while!!");
-                rndBottom = rnd.nextInt(y - rndTop) + rndTop;
-            }
-        }
-
-        this.rndRect = new RectF(rndLeft, rndTop, rndRight, rndBottom);
+        objectType = -1;
     }
 
     public void randomizePaintColor() {
@@ -110,7 +62,7 @@ public class MyCanvas extends View {
 
         if (onCreate) {
             System.out.println("!!! CANVAS onCreate");
-            generateNewRandomRect(true);
+            //generateNewRandomRect(true);
             paint.setColor(Color.BLACK);
             paint.setStrokeWidth(3);
             canvas.drawPaint(paint);
@@ -125,19 +77,27 @@ public class MyCanvas extends View {
         System.out.println("OBJECT TYPE MyCanvas: " + getObjectType());
 
         switch (objectType) {
+            // Circle
             case 0:
-                canvas.drawCircle(rndCircleX, rndCircleY, circleRadius, paint);
+                canvas.drawCircle(geometryObject.getCenterX(), geometryObject.getCenterY(), geometryObject.getRadius(), paint);
                 break;
+            // Square
             case 1:
+                Rectangle rectObject = (Rectangle) geometryObject;
                 canvas.save();
-                canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, rndRect.centerX(), rndRect.centerY());
-                canvas.drawRect(rndRect, paint);
+                canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, rectObject.getCenterX(), rectObject.getCenterY());
+                canvas.drawRect(new RectF(rectObject.getLeft(), rectObject.getTop(), rectObject.getRight(), rectObject.getBottom()), paint);
                 canvas.restore();
                 break;
+            // Triangle
+            case 2:
+                Triangle triangleObject = (Triangle) geometryObject;
+                Path path = new Path();
+                path = triangleObject.getPath();
+                canvas.drawPath(path, paint);
+                //path.reset();
+                break;
         }
-
-        // Circle
-        //canvas.drawCircle(x/2, y/2, 100, paint);
     }
 
     public void setObjectType(int objectType) {
@@ -221,5 +181,21 @@ public class MyCanvas extends View {
 
     public void setRndBottom(int rndBottom) {
         this.rndBottom = rndBottom;
+    }
+
+    public int getScrWidth() {
+        return getWidth();
+    }
+
+    public int getScrHeight() {
+        return getHeight();
+    }
+
+    public GeometryObject getGeometryObject() {
+        return geometryObject;
+    }
+
+    public void setGeometryObject(GeometryObject geometryObject) {
+        this.geometryObject = geometryObject;
     }
 }
