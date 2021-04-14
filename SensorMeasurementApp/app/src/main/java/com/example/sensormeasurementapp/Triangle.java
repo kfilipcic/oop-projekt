@@ -71,6 +71,9 @@ public class Triangle extends GeometryObject {
 
         } while (xc <= 0 || xc >= x || yc <= 0 || yc >= y || x1 <= 0 || x1 >= x || y1 <= 0 || y1 >= y || x2 <= 0 || x2 >= x || y2 <= 0 || y2 >= y || x3 <= 0 || x3 >= x || y3 <= 0 || y3 >= y);
 
+        setCenterX(xc);
+        setCenterY(yc);
+
         path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
         path.moveTo((int)x1, (int)y1);
