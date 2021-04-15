@@ -11,7 +11,9 @@
     <string name="minSizeText">Min. size:</string>
     <string name="maxRotationText">Max. rotation (°):</string>
     <string name="minRotationText">Min. rotation (°):</string>
-    <string name="SessionNameText">User/session name:</string>
+    <string name="SessionNameText">Session name:</string>
+    <string name="UsernameText">Username:</string>
+    <string name="TapNumSessionText">Number of taps per session:</string>
 
     <string name="shapes_cb_file_key">shapesCB</string>
     <string name="size_max_bound_file_key">maxSizeET</string>
@@ -19,4 +21,9 @@
     <string name="rotation_max_bound_file_key">maxRotationET</string>
     <string name="rotation_min_bound_file_key">minRotationET</string>
     <string name="session_name_file_key">sessionNameET</string>
+    <string name="username_file_key">usernameET</string>
+    <string name="session_tapnum_file_key">sessionTapNumET</string>
+    <string name="new_settings_boolean_file_key">newSettingsBoolean</string>
+
+    <string name="session_end_toast_msg">No session in progress!</string>
 </resources>

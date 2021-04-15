@@ -19,6 +19,8 @@ public class MyCanvas extends View {
     private int rndTop = 0;
     private int rndBottom = 0;
     private int minRotationDegree, maxRotationDegree = 0;
+
+    private int tapNum;
     RectF rndRect;
     float rndCircleX, rndCircleY;
     float circleRadius;
@@ -86,15 +88,22 @@ public class MyCanvas extends View {
                 Rectangle rectObject = (Rectangle) geometryObject;
                 canvas.save();
                 canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, rectObject.getCenterX(), rectObject.getCenterY());
+
                 canvas.drawRect(new RectF(rectObject.getLeft(), rectObject.getTop(), rectObject.getRight(), rectObject.getBottom()), paint);
+
                 canvas.restore();
                 break;
             // Triangle
             case 2:
                 Triangle triangleObject = (Triangle) geometryObject;
+                canvas.save();
+                canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, triangleObject.getCenterX(), triangleObject.getCenterY());
+
                 Path path = new Path();
                 path = triangleObject.getPath();
+
                 canvas.drawPath(path, paint);
+                canvas.restore();
                 //path.reset();
                 break;
         }
@@ -197,5 +206,13 @@ public class MyCanvas extends View {
 
     public void setGeometryObject(GeometryObject geometryObject) {
         this.geometryObject = geometryObject;
+    }
+
+    public int getTapNum() {
+        return tapNum;
+    }
+
+    public void setTapNum(int tapNum) {
+        this.tapNum = tapNum;
     }
 }

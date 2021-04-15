@@ -59,6 +59,16 @@ public class Triangle extends GeometryObject {
 
             if (xc-x1 == 0) continue;
 
+            double sideLength = getRadius()*Math.sqrt(3);
+
+            x2 = x1 + sideLength;
+            y2 = y1;
+
+            x3 = x1 + sideLength/2;
+            y3 = y1 - (getRadius()*1.5);
+
+
+            /*
             double tgAlpha1 = (yc-y1)/(xc-x1);
             double tgAlpha2 = (tgAlpha1-(Math.sqrt(3.0)/3.0)) / (1.0 + tgAlpha1*(Math.sqrt(3.0)/3.0));
             double tgAlpha3 = (tgAlpha1+(Math.sqrt(3.0)/3.0)) / (1.0 - tgAlpha1*(Math.sqrt(3.0)/3.0));
@@ -67,7 +77,7 @@ public class Triangle extends GeometryObject {
             y2 = xy2[1];
             double[] xy3 = calcXYPoints(tgAlpha3, getRadius(), xc, yc, x1, y1);
             x3 = xy3[0];
-            y3 = xy3[1];
+            y3 = xy3[1]; */
 
         } while (xc <= 0 || xc >= x || yc <= 0 || yc >= y || x1 <= 0 || x1 >= x || y1 <= 0 || y1 >= y || x2 <= 0 || x2 >= x || y2 <= 0 || y2 >= y || x3 <= 0 || x3 >= x || y3 <= 0 || y3 >= y);
 

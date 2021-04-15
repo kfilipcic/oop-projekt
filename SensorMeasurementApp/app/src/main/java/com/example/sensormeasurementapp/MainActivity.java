@@ -13,6 +13,7 @@ import android.graphics.RectF;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences.Editor editor;
     String cbValuesString;
     String sessionName;
+    String username;
+    int sessionTapNum;
+    boolean newSettings;
 
     public void logToCsvFile() {
         // If this value is null, it is probably
@@ -93,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawNewObject(float x, float y, int objectType) {
         if (myCanvas.geometryObject == null) {
+
             myCanvas.setGeometryObject(new GeometryObject());
         }
         if (myCanvas.geometryObject.isInside(x, y)) {
@@ -148,6 +154,9 @@ public class MainActivity extends AppCompatActivity {
         myCanvas.setMinRotationDegree(sharedPreferences.getInt(getString(R.string.rotation_min_bound_file_key), 0));
         myCanvas.setMaxRotationDegree(sharedPreferences.getInt(getString(R.string.rotation_max_bound_file_key), 0));
         sessionName = sharedPreferences.getString(getString(R.string.session_name_file_key), "default");
+        username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
+        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), -1);
+        newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
     }
 
     @Override
@@ -163,52 +172,49 @@ public class MainActivity extends AppCompatActivity {
 
 
         fetchConfigurationDataFromSharedPreferences();
+        myCanvas.setTapNum(0);
 
         objectTypes = stringToBoolArray(cbValuesString);
 
-        //TextView sampleText = (TextView) findViewById(R.id.sample_text);
-        //myCanvas = new MyCanvas(this);
-        //setContentView(myCanvas);
         touchCnt = 0;
-        //objectTypes.add(0);
-        //objectTypes.add(1);
 
         myCanvas.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                // Create rectangle from the point of touch
+                if (myCanvas.getTapNum() >= sessionTapNum) {
+                    Toast.makeText(MainActivity.this, getString(R.string.session_end_toast_msg), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
 
-                //RectF touchpoint = new RectF((int)event.getX(), (int)event.getY(), 10, 10);
-                //System.out.println(event.getRawX() + ", " + event.getRawY());
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         // touch down code
-                        startTapTime = System.currentTimeMillis();
+                        //startTapTime = System.currentTimeMillis();
+                        startTapTime = SystemClock.elapsedRealtime();
                         break;
 
                     case MotionEvent.ACTION_UP:
                         float x = event.getRawX();
                         float y = event.getY();
-                        tapTime = System.currentTimeMillis() - startTapTime;
+                        //tapTime = System.currentTimeMillis() - startTapTime;
+                        tapTime = SystemClock.elapsedRealtime() - startTapTime;
                         // touch up code
                         touchCnt++;
-                        System.out.println("on touch: " + String.valueOf(touchCnt));
 
                         Random rnd = new Random();
                         ArrayList<Integer> objectTypesRandom = new ArrayList<Integer>();
-                        System.out.println("obj types size " + objectTypes.size());
                         for (int i = 0; i < objectTypes.size(); i++) {
                             if (objectTypes.get(i)) {
                                 objectTypesRandom.add(i);
                             }
                         }
-                        System.out.println("OBJECT types random: " + objectTypesRandom);
                         if (objectTypesRandom.isEmpty()) {
                             myCanvas.setObjectType(-1);
                         } else {
                             myCanvas.setObjectType(objectTypesRandom.get(rnd.nextInt(objectTypesRandom.size())));
                         }
 
+                        myCanvas.setTapNum(myCanvas.getTapNum() + 1);
                         drawNewObject(x, y, myCanvas.getObjectType());
                         logToCsvFile();
                         break;
@@ -234,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, ConfigurationActivity.class);
                 editor.putString(getString(R.string.shapes_cb_file_key), boolArrayToString(objectTypes));
                 editor.putString(getString(R.string.session_name_file_key), sessionName);
+                editor.putBoolean(getString(R.string.new_settings_boolean_file_key), false);
                 editor.apply();
                 startActivity(intent);
                 return true;
@@ -247,6 +254,12 @@ public class MainActivity extends AppCompatActivity {
 
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         fetchConfigurationDataFromSharedPreferences();
+        System.out.println("MainActivity onResume");
+        if (newSettings) {
+            myCanvas.setTapNum(0);
+            System.out.println("NEW SETTINGS MAINACT");
+            newSettings = false;
+        }
         objectTypes = stringToBoolArray(cbValuesString);
     }
 }

@@ -1,11 +1,8 @@
 package com.example.sensormeasurementapp;
 
-import androidx.activity.ComponentActivity;
-import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +14,6 @@ import android.text.TextWatcher;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 
 public class ConfigurationActivity extends AppCompatActivity {
@@ -26,6 +22,9 @@ public class ConfigurationActivity extends AppCompatActivity {
     ArrayList<Boolean> objectTypes;
     int minBound, maxBound, minRotationDegree, maxRotationDegree;
     String sessionName;
+    String username;
+    int sessionTapNum;
+    boolean newSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,28 +40,38 @@ public class ConfigurationActivity extends AppCompatActivity {
         minRotationDegree = sharedPreferences.getInt(getString(R.string.rotation_min_bound_file_key), 0);
         maxRotationDegree = sharedPreferences.getInt(getString(R.string.rotation_max_bound_file_key), 0);
         sessionName = sharedPreferences.getString(getString(R.string.session_name_file_key), "default");
+        username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
+        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), -1);
+        newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
 
         EditText maxSizeET = findViewById(R.id.maxSizeInputText);
         EditText minSizeET = findViewById(R.id.minSizeInputText);
         EditText maxRotationET = findViewById(R.id.maxRotationInputText);
         EditText minRotationET = findViewById(R.id.minRotationInputText);
 
+        EditText sessionTapNumET = findViewById(R.id.numTapsSessionET);
+
         EditText sessionNameET = findViewById(R.id.sessionNameInputText);
+        EditText usernameET = findViewById(R.id.usernameET);
 
         ArrayList<EditText> configETs = new ArrayList<>();
         configETs.add(maxSizeET);
         configETs.add(minSizeET);
         configETs.add(maxRotationET);
         configETs.add(minRotationET);
+        configETs.add(sessionTapNumET);
 
-        int[] configETsIDs = new int[]{R.id.maxSizeInputText, R.id.minSizeInputText, R.id.maxRotationInputText, R.id.minRotationInputText};
+        int[] configETsIDs = new int[]{R.id.maxSizeInputText, R.id.minSizeInputText, R.id.maxRotationInputText, R.id.minRotationInputText, R.id.numTapsSessionET};
 
         maxSizeET.setText(String.valueOf(maxBound));
         minSizeET.setText(String.valueOf(minBound));
         maxRotationET.setText(String.valueOf(maxRotationDegree));
         minRotationET.setText(String.valueOf(minRotationDegree));
 
+        sessionTapNumET.setText(String.valueOf(sessionTapNum));
+
         sessionNameET.setText(sessionName);
+        usernameET.setText(username);
 
         for (int i = 0; i < configETs.size(); i++) {
             EditText ET = configETs.get(i);
@@ -80,7 +89,11 @@ public class ConfigurationActivity extends AppCompatActivity {
                 public void afterTextChanged(Editable s) {
                     int valueET = 0;
                     if (!s.toString().isEmpty()) {
-                        valueET = Integer.parseInt(s.toString());
+                        try {
+                            valueET = Integer.parseInt(s.toString());
+                        } catch (Exception e) {
+                            ET.setError("");
+                        }
                     }
 
                     switch (finalI) {
@@ -120,6 +133,9 @@ public class ConfigurationActivity extends AppCompatActivity {
                             }
                             minRotationDegree = valueET;
                             break;
+                        case 4:
+                            sessionTapNum = valueET;
+                            break;
                     }
                 }
             });
@@ -142,7 +158,23 @@ public class ConfigurationActivity extends AppCompatActivity {
             }
         });
 
-        System.out.println("objectTypesString: " + objectTypesString);
+        usernameET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                username = s.toString();
+            }
+        });
+
         objectTypes = MainActivity.stringToBoolArray(objectTypesString);
 
 
@@ -178,15 +210,15 @@ public class ConfigurationActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        System.out.println("onDestroy ConfigurationActivity");
         //editor.commit();
 
-        //Intent intent = new Intent(this, MainActivity.class);
-        //startActivity(intent);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        System.out.println("onPause ConfigurationActivity");
 
     }
 
@@ -212,7 +244,9 @@ public class ConfigurationActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
                         if (settingsValid()) {
+                            newSettings = true;
                             saveNewSettings();
+                            newSettings = false;
                             finish();
                         } else {
                             dialog.dismiss();
@@ -273,6 +307,9 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putInt(getString(R.string.rotation_max_bound_file_key), maxRotationDegree);
         editor.putInt(getString(R.string.rotation_min_bound_file_key), minRotationDegree);
         editor.putString(getString(R.string.session_name_file_key), sessionName);
+        editor.putString(getString(R.string.username_file_key), username);
+        editor.putInt(getString(R.string.session_tapnum_file_key), sessionTapNum);
+        editor.putBoolean(getString(R.string.new_settings_boolean_file_key), newSettings);
 
         editor.commit();
     }
