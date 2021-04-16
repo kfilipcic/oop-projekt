@@ -42,7 +42,8 @@ public class Triangle extends GeometryObject {
         return new double[]{xn, yn};
     }
 
-    public Triangle(int x, int y, int minBound, int maxBound) {
+    public Triangle(int x, int y, int minBound, int maxBound, int minRotationDegree, int maxRotationDegree) {
+        super(minRotationDegree, maxRotationDegree);
         setObjectTypeString("triangle");
 
         Random rnd = new Random();
@@ -164,6 +165,5 @@ public class Triangle extends GeometryObject {
     public void setPath(Path path) {
         this.path = path;
     }
-
 
 }

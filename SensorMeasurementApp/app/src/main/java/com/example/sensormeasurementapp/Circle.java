@@ -3,7 +3,8 @@ package com.example.sensormeasurementapp;
 import java.util.Random;
 
 public class Circle extends GeometryObject {
-    public Circle(int x, int y, int minBound, int maxBound) {
+    public Circle(int x, int y, int minBound, int maxBound, int minRotationDegree, int maxRotationDegree) {
+        super(minRotationDegree, maxRotationDegree);
         setObjectTypeString("circle");
         Random rnd = new Random();
         do {

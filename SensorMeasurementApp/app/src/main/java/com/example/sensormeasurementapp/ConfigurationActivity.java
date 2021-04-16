@@ -235,11 +235,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     public void onBackPressed() {
         //super.onBackPressed();
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-        builder1.setMessage("Save these settings? Select Cancel to stay on this screen.");
+        builder1.setMessage(getString(R.string.save_settings_dialog_msg));
         builder1.setCancelable(true);
 
         builder1.setPositiveButton(
-                "Save",
+                getString(R.string.save_btn_text),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -252,11 +252,11 @@ public class ConfigurationActivity extends AppCompatActivity {
                             dialog.dismiss();
 
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(ConfigurationActivity.this);
-                            builder2.setMessage("Invalid settings! Input correct values and try again.");
+                            builder2.setMessage(getString(R.string.invalid_settings_dialog_msg));
                             builder2.setCancelable(false);
 
                             builder2.setPositiveButton(
-                                    "OK",
+                                    getString(R.string.ok_btn_text),
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -271,7 +271,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                 });
 
         builder1.setNegativeButton(
-                "Don't Save",
+                getString(R.string.dont_save_btn_text),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -280,7 +280,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                 });
 
         builder1.setNeutralButton(
-                "Cancel",
+                getString(R.string.cancel_btn_text),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();

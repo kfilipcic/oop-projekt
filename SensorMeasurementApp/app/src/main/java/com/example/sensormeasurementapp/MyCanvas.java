@@ -87,7 +87,7 @@ public class MyCanvas extends View {
             case 1:
                 Rectangle rectObject = (Rectangle) geometryObject;
                 canvas.save();
-                canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, rectObject.getCenterX(), rectObject.getCenterY());
+                canvas.rotate(rectObject.getRotationValue(), rectObject.getCenterX(), rectObject.getCenterY());
 
                 canvas.drawRect(new RectF(rectObject.getLeft(), rectObject.getTop(), rectObject.getRight(), rectObject.getBottom()), paint);
 
@@ -97,7 +97,7 @@ public class MyCanvas extends View {
             case 2:
                 Triangle triangleObject = (Triangle) geometryObject;
                 canvas.save();
-                canvas.rotate(rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree, triangleObject.getCenterX(), triangleObject.getCenterY());
+                canvas.rotate(triangleObject.getRotationValue(), triangleObject.getCenterX(), triangleObject.getCenterY());
 
                 Path path = new Path();
                 path = triangleObject.getPath();

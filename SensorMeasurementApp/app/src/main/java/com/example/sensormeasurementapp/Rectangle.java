@@ -42,8 +42,8 @@ public class Rectangle extends GeometryObject {
         this.bottom = bottom;
     }
 
-
-    public Rectangle(int x, int y, int minBound, int maxBound, Boolean isSquare) {
+    public Rectangle(int x, int y, int minBound, int maxBound, int minRotationDegree, int maxRotationDegree, Boolean isSquare) {
+        super(minRotationDegree, maxRotationDegree);
         setObjectTypeString("rectangle");
 
         Random rnd = new Random();

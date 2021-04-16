@@ -43,10 +43,11 @@ public class MainActivity extends AppCompatActivity {
     String cbValuesString;
     String sessionName;
     String username;
+    String interactionTypeString = "single tap";
     int sessionTapNum;
     boolean newSettings;
 
-    public void logToCsvFile() {
+    public void logToCsvFile(float xTouch, float yTouch) {
         // If this value is null, it is probably
         // the first tap, so don't log
         if (myCanvas.getTargetHit() == null) {
@@ -60,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
             File file = new File(path + "/" + sessionName +".csv");
             // If file doesn't exist, then create it
             if (!file.exists()) {
-                content = "timeStamp,sessionName,objectType,xCenter,yCenter,radius,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,isTargetHit,tapTime(ms)\n";
-                //content = "timeStamp,sessionName,objectType,rectLeft,rectTop,rectRight,rectBottom,circleRadius,minSize,maxSize,minRotation,maxRotation,targetHit,tapTime(ms)\n";
+                // Create header for new log file
+                content = getString(R.string.log_file_header) + "\n";
                 file.createNewFile();
                 FileWriter fw = new FileWriter(file.getAbsoluteFile());
                 BufferedWriter bw = new BufferedWriter(fw);
@@ -73,18 +74,24 @@ public class MainActivity extends AppCompatActivity {
             String centerXString = "null";
             String centerYString = "null";
             String objectTypeString = "null";
+            String objectRotationValueString = "null";
 
             circleRadiusValue = String.valueOf(myCanvas.getGeometryObject().getRadius());
             centerXString = String.valueOf(myCanvas.getGeometryObject().getCenterX());
             centerYString = String.valueOf(myCanvas.getGeometryObject().getCenterY());
             objectTypeString = myCanvas.getGeometryObject().getObjectTypeString();
+            objectRotationValueString = String.valueOf(myCanvas.getGeometryObject().getRotationValue());
+
+            String delimiter = ",";
 
             // Create new CSV record row as string with appropriate data
-            content = currentDateAndTime + "," + sessionName + "," + objectTypeString + ","
-                    + centerXString + "," + centerYString + "," + circleRadiusValue + ","
-                    + String.valueOf(myCanvas.getMinBound()) + "," + String.valueOf(myCanvas.getMaxBound()) + ","
-                    + String.valueOf(myCanvas.getMinRotationDegree()) + "," + String.valueOf(myCanvas.getMaxRotationDegree()) + ","
-                    + String.valueOf(myCanvas.getTargetHit()) + "," + String.valueOf(tapTime) + "\n";
+            content = currentDateAndTime + delimiter + username + delimiter + sessionName + delimiter + objectTypeString + delimiter
+                    + centerXString + delimiter + centerYString + delimiter + circleRadiusValue + delimiter
+                    + xTouch + delimiter + yTouch + delimiter + objectRotationValueString + delimiter + interactionTypeString + delimiter
+                    + String.valueOf(sessionTapNum) + delimiter
+                    + String.valueOf(myCanvas.getMinBound()) + delimiter + String.valueOf(myCanvas.getMaxBound()) + delimiter
+                    + String.valueOf(myCanvas.getMinRotationDegree()) + delimiter + String.valueOf(myCanvas.getMaxRotationDegree()) + delimiter
+                    + String.valueOf(myCanvas.getTargetHit()) + delimiter + String.valueOf(tapTime) + "\n";
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
             BufferedWriter bw = new BufferedWriter(fw);
@@ -98,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawNewObject(float x, float y, int objectType) {
         if (myCanvas.geometryObject == null) {
-
             myCanvas.setGeometryObject(new GeometryObject());
         }
         if (myCanvas.geometryObject.isInside(x, y)) {
@@ -111,14 +117,14 @@ public class MainActivity extends AppCompatActivity {
         myCanvas.invalidate();
         switch (objectType) {
             case 0:
-                myCanvas.setGeometryObject(new Circle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound()));
+                myCanvas.setGeometryObject(new Circle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
                 break;
             case 1:
                 Boolean isSquare = true;
-                myCanvas.setGeometryObject(new Rectangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), isSquare));
+                myCanvas.setGeometryObject(new Rectangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree(), isSquare));
                 break;
             case 2:
-                myCanvas.setGeometryObject(new Triangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound()));
+                myCanvas.setGeometryObject(new Triangle(myCanvas.getScrWidth(), myCanvas.getScrHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
                 break;
         }
     }
@@ -194,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case MotionEvent.ACTION_UP:
-                        float x = event.getRawX();
+                        float x = event.getX();
                         float y = event.getY();
                         //tapTime = System.currentTimeMillis() - startTapTime;
                         tapTime = SystemClock.elapsedRealtime() - startTapTime;
@@ -216,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
                         myCanvas.setTapNum(myCanvas.getTapNum() + 1);
                         drawNewObject(x, y, myCanvas.getObjectType());
-                        logToCsvFile();
+                        logToCsvFile(x, y);
                         break;
                 }
                 //myCanvas.invalidate();
@@ -254,10 +260,8 @@ public class MainActivity extends AppCompatActivity {
 
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         fetchConfigurationDataFromSharedPreferences();
-        System.out.println("MainActivity onResume");
         if (newSettings) {
             myCanvas.setTapNum(0);
-            System.out.println("NEW SETTINGS MAINACT");
             newSettings = false;
         }
         objectTypes = stringToBoolArray(cbValuesString);
