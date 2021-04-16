@@ -8,11 +8,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -25,6 +30,9 @@ public class ConfigurationActivity extends AppCompatActivity {
     String username;
     int sessionTapNum;
     boolean newSettings;
+    String interactionTypeString;
+    float dwellTime;
+    float doubleTapTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +40,14 @@ public class ConfigurationActivity extends AppCompatActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
         setContentView(R.layout.activity_configuration);
+
+        Intent intent = getIntent();
+        Bundle b = intent.getExtras();
+
+        if (b != null) {
+            interactionTypeString = (String) b.get(getString(R.string.interaction_type_file_key));
+            System.out.println("INT TYPE STRING: " + interactionTypeString);
+        }
 
         // Fetch relevant data from Shared Preferences
         String objectTypesString = sharedPreferences.getString(getString(R.string.shapes_cb_file_key), "01");
@@ -43,6 +59,8 @@ public class ConfigurationActivity extends AppCompatActivity {
         username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
         sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), -1);
         newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
+        dwellTime = sharedPreferences.getFloat(getString(R.string.dwell_time_file_key), 0);
+        doubleTapTime = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), 0);
 
         EditText maxSizeET = findViewById(R.id.maxSizeInputText);
         EditText minSizeET = findViewById(R.id.minSizeInputText);
@@ -53,6 +71,79 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         EditText sessionNameET = findViewById(R.id.sessionNameInputText);
         EditText usernameET = findViewById(R.id.usernameET);
+
+        TextView dwellTimeTV = findViewById(R.id.dwellTimeTV);
+        EditText dwellTimeET = findViewById(R.id.dwellTimeET);
+
+        TextView doubleTapTimeTV = findViewById(R.id.doubleTapTimeTV);
+        EditText doubleTapTimeET = findViewById(R.id.doubleTapTimeET);
+
+        Button backBtn = findViewById(R.id.backConfigurationButton);
+        Button startNewSessionBtn = findViewById(R.id.startSessionConfigurationButton);
+
+        if (interactionTypeString.equals("long tap")) {
+            dwellTimeTV.setEnabled(true);
+            dwellTimeET.setEnabled(true);
+            dwellTimeET.setText(String.valueOf(dwellTime));
+
+            dwellTimeET.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (!s.toString().isEmpty()) {
+                        try {
+                            dwellTime = Float.parseFloat(s.toString());
+                        } catch (Exception e) {
+                            System.err.println("Error while parsing float from EditText! (dwellTimeET)");
+                        }
+                    }
+                }
+            });
+        } else {
+            dwellTimeTV.setEnabled(false);
+            dwellTimeET.setEnabled(false);
+        }
+
+        if (interactionTypeString.equals("double tap")) {
+            doubleTapTimeTV.setEnabled(true);
+            doubleTapTimeET.setEnabled(true);
+            doubleTapTimeET.setText(String.valueOf(doubleTapTime));
+
+            doubleTapTimeET.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (!s.toString().isEmpty()) {
+                        try {
+                            doubleTapTime = Float.parseFloat(s.toString());
+                        } catch (Exception e) {
+                            System.err.println("Error while parsing float from EditText! (doubleTapTimeET)");
+                        }
+                    }
+                }
+            });
+        } else {
+            doubleTapTimeTV.setEnabled(false);
+            doubleTapTimeET.setEnabled(false);
+        }
 
         ArrayList<EditText> configETs = new ArrayList<>();
         configETs.add(maxSizeET);
@@ -175,7 +266,30 @@ public class ConfigurationActivity extends AppCompatActivity {
             }
         });
 
-        objectTypes = MainActivity.stringToBoolArray(objectTypesString);
+        startNewSessionBtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (settingsValid()) {
+                    newSettings = true;
+                    saveNewSettings();
+                    newSettings = false;
+                    finish();
+                } else {
+                    showInvalidValuesErrorDialog();
+                }
+                return true;
+            }
+        });
+
+        backBtn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                finish();
+                return true;
+            }
+        });
+
+        objectTypes = SingleTapActivity.stringToBoolArray(objectTypesString);
 
 
         int[] objectTypeIds = new int[]{R.id.circleCB, R.id.squaresCB, R.id.trianglesCB};
@@ -250,22 +364,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                             finish();
                         } else {
                             dialog.dismiss();
-
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(ConfigurationActivity.this);
-                            builder2.setMessage(getString(R.string.invalid_settings_dialog_msg));
-                            builder2.setCancelable(false);
-
-                            builder2.setPositiveButton(
-                                    getString(R.string.ok_btn_text),
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.cancel();
-                                        }
-                                    }
-                            );
-                            AlertDialog alert2 = builder2.create();
-                            alert2.show();
+                            showInvalidValuesErrorDialog();
                         }
                     }
                 });
@@ -292,6 +391,24 @@ public class ConfigurationActivity extends AppCompatActivity {
         alert11.setCancelable(false);
     }
 
+    private void showInvalidValuesErrorDialog() {
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(ConfigurationActivity.this);
+        builder2.setMessage(getString(R.string.invalid_settings_dialog_msg));
+        builder2.setCancelable(false);
+
+        builder2.setPositiveButton(
+                getString(R.string.ok_btn_text),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }
+        );
+        AlertDialog alert2 = builder2.create();
+        alert2.show();
+    }
+
     private Boolean settingsValid() {
         if (maxBound >= minBound && maxRotationDegree >= minRotationDegree) {
             return true;
@@ -310,6 +427,13 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putString(getString(R.string.username_file_key), username);
         editor.putInt(getString(R.string.session_tapnum_file_key), sessionTapNum);
         editor.putBoolean(getString(R.string.new_settings_boolean_file_key), newSettings);
+
+        if (interactionTypeString.equals("long tap")) {
+            editor.putFloat(getString(R.string.dwell_time_file_key), dwellTime);
+        }
+        else if (interactionTypeString.equals("double tap")) {
+            editor.putFloat(getString(R.string.double_tap_time_file_key), doubleTapTime);
+        }
 
         editor.commit();
     }

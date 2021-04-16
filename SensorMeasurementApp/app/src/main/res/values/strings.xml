@@ -14,6 +14,8 @@
     <string name="SessionNameText">Session name:</string>
     <string name="UsernameText">Username:</string>
     <string name="TapNumSessionText">Number of taps per session:</string>
+    <string name="dwell_time_TV">Dwell time (s):</string>
+    <string name="double_tap_time_TV">Double tap time (s):</string>
 
     <string name="save_settings_dialog_msg">Start new session with these settings?</string>
     <string name="invalid_settings_dialog_msg">Invalid settings! Enter valid values and try again.</string>
@@ -21,6 +23,8 @@
     <string name="dont_save_btn_text">Don\'t Save</string>
     <string name="ok_btn_text">OK</string>
     <string name="cancel_btn_text">Cancel</string>
+    <string name="back_btn">Back</string>
+    <string name="start_new_session_btn">Apply settings and start new session</string>
 
     <string name="shapes_cb_file_key">shapesCB</string>
     <string name="size_max_bound_file_key">maxSizeET</string>
@@ -31,9 +35,15 @@
     <string name="username_file_key">usernameET</string>
     <string name="session_tapnum_file_key">sessionTapNumET</string>
     <string name="new_settings_boolean_file_key">newSettingsBoolean</string>
+    <string name="interaction_type_file_key">interactionType</string>
+    <string name="dwell_time_file_key">dwellTime</string>
+    <string name="double_tap_time_file_key">doubleTapTime</string>
 
     <string name="session_end_toast_msg">No session in progress!</string>
 
-    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,objectRotation,interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,isTargetHit,tapTime(ms)</string>
+    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,objectRotation,interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,dwellTime(s),doubleTapTime(s),isTargetHit,isTapSuccessful,tapTime(ms)</string>
 
+    <string name="single_tap_menu_btn">Single tap testing</string>
+    <string name="long_tap_menu_btn">Long tap testing</string>
+    <string name="double_tap_menu_btn">Double tap testing</string>
 </resources>

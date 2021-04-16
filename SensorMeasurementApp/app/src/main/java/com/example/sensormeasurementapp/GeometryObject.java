@@ -9,6 +9,8 @@ public class GeometryObject {
 
     private int rotationValue;
 
+    private Boolean tapSuccessful = null;
+
     private String objectTypeString;
 
     GeometryObject(int minRotationDegree, int maxRotationDegree) {
@@ -66,5 +68,13 @@ public class GeometryObject {
     private void setRandomRotationValue(int minRotationDegree, int maxRotationDegree) {
         Random rnd = new Random();
         this.rotationValue = rnd.nextInt(maxRotationDegree - minRotationDegree + 1) + minRotationDegree;
+    }
+
+    public Boolean getTapSuccessful() {
+        return tapSuccessful;
+    }
+
+    public void setTapSuccessful(Boolean tapSuccessful) {
+        this.tapSuccessful = tapSuccessful;
     }
 }
