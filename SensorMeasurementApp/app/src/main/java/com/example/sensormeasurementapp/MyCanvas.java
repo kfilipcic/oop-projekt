@@ -29,7 +29,6 @@ public class MyCanvas extends View {
     int objectType;
     GeometryObject geometryObject;
 
-
     public MyCanvas(Context context) {
         super(context);
         rndRect = new RectF();
@@ -63,7 +62,6 @@ public class MyCanvas extends View {
         //System.out.println(String.valueOf(rndRight-rndLeft) + " " + String.valueOf(rndBottom-rndTop));
 
         if (onCreate) {
-            System.out.println("!!! CANVAS onCreate");
             //generateNewRandomRect(true);
             paint.setColor(Color.BLACK);
             paint.setStrokeWidth(3);
@@ -76,8 +74,6 @@ public class MyCanvas extends View {
 
         //canvas.drawColor(Color.BLACK);
 
-        System.out.println("OBJECT TYPE MyCanvas: " + getObjectType());
-
         switch (objectType) {
             // Circle
             case 0:
@@ -86,25 +82,12 @@ public class MyCanvas extends View {
             // Square
             case 1:
                 Rectangle rectObject = (Rectangle) geometryObject;
-                canvas.save();
-                canvas.rotate(rectObject.getRotationValue(), rectObject.getCenterX(), rectObject.getCenterY());
-
-                canvas.drawRect(new RectF(rectObject.getLeft(), rectObject.getTop(), rectObject.getRight(), rectObject.getBottom()), paint);
-
-                canvas.restore();
+                canvas.drawPath(rectObject.getPath(), paint);
                 break;
             // Triangle
             case 2:
                 Triangle triangleObject = (Triangle) geometryObject;
-                canvas.save();
-                canvas.rotate(triangleObject.getRotationValue(), triangleObject.getCenterX(), triangleObject.getCenterY());
-
-                Path path = new Path();
-                path = triangleObject.getPath();
-
-                canvas.drawPath(path, paint);
-                canvas.restore();
-                //path.reset();
+                canvas.drawPath(triangleObject.getPath(), paint);
                 break;
         }
     }

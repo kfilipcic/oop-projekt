@@ -1,5 +1,6 @@
 package com.example.sensormeasurementapp;
 
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.RectF;
 
@@ -55,6 +56,10 @@ public class Triangle extends GeometryObject {
             yc = rnd.nextInt(y);
             setRadius(rnd.nextInt(maxBound - minBound + 1) + minBound);
 
+            if (xc-getRadius() <= 0 || xc+getRadius() >= x || yc-getRadius() <= 0 || yc+getRadius() >= y) {
+                continue;
+            }
+
             x1 = rnd.nextInt((int) ((xc+getRadius())-(xc-getRadius()) + 1)) + (xc-getRadius());
             y1 = Math.sqrt(Math.pow(getRadius(),2) - Math.pow((x1-xc),2)) + yc;
 
@@ -80,7 +85,7 @@ public class Triangle extends GeometryObject {
             x3 = xy3[0];
             y3 = xy3[1]; */
 
-        } while (xc <= 0 || xc >= x || yc <= 0 || yc >= y || x1 <= 0 || x1 >= x || y1 <= 0 || y1 >= y || x2 <= 0 || x2 >= x || y2 <= 0 || y2 >= y || x3 <= 0 || x3 >= x || y3 <= 0 || y3 >= y);
+        } while (xc <= 0 || xc >= x || yc <= 0 || yc >= y || x1 <= 0 || x1 >= x || y1 <= 0 || y1 >= y || x2 <= 0 || x2 >= x || y2 <= 0 || y2 >= y || x3 <= 0 || x3 >= x || y3 <= 0 || y3 >= y || xc-getRadius() <= 0 || xc+getRadius() >= x || yc-getRadius() <= 0 || yc+getRadius() >= y);
 
         setCenterX(xc);
         setCenterY(yc);
@@ -91,6 +96,12 @@ public class Triangle extends GeometryObject {
         path.lineTo((int)x2, (int)y2);
         path.lineTo((int)x3, (int)y3);
         path.lineTo((int)x1, (int)y1);
+        Matrix triangleMatrix  = new Matrix();
+        RectF bounds = new RectF();
+        path.computeBounds(bounds, true);
+        triangleMatrix.postRotate(getRotationValue(), bounds.centerX(), bounds.centerY());
+        path.transform(triangleMatrix);
+
         //path.close();
     }
 

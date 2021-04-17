@@ -3,6 +3,7 @@ package com.example.sensormeasurementapp;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -34,6 +36,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     float dwellTime;
     float doubleTapTime;
 
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +53,6 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         if (b != null) {
             interactionTypeString = (String) b.get(getString(R.string.interaction_type_file_key));
-            System.out.println("INT TYPE STRING: " + interactionTypeString);
         }
 
         // Fetch relevant data from Shared Preferences
@@ -102,8 +108,10 @@ public class ConfigurationActivity extends AppCompatActivity {
                     if (!s.toString().isEmpty()) {
                         try {
                             dwellTime = Float.parseFloat(s.toString());
+                            dwellTimeET.setError(null);
                         } catch (Exception e) {
                             System.err.println("Error while parsing float from EditText! (dwellTimeET)");
+                            dwellTimeET.setError("Invalid value!");
                         }
                     }
                 }
@@ -134,8 +142,10 @@ public class ConfigurationActivity extends AppCompatActivity {
                     if (!s.toString().isEmpty()) {
                         try {
                             doubleTapTime = Float.parseFloat(s.toString());
+                            dwellTimeET.setError(null);
                         } catch (Exception e) {
                             System.err.println("Error while parsing float from EditText! (doubleTapTimeET)");
+                            dwellTimeET.setError("Invalid value!");
                         }
                     }
                 }
@@ -145,12 +155,27 @@ public class ConfigurationActivity extends AppCompatActivity {
             doubleTapTimeET.setEnabled(false);
         }
 
+        // Create array containing EditTexts for min/max value
+        // parameters
+        ArrayList<EditText> configParamETs = new ArrayList<>();
+        configParamETs.add(maxSizeET);
+        configParamETs.add(minSizeET);
+        configParamETs.add(maxRotationET);
+        configParamETs.add(minRotationET);
+        configParamETs.add(sessionTapNumET);
+
+        // Create array which contains ALL EditTexts from this activity
         ArrayList<EditText> configETs = new ArrayList<>();
         configETs.add(maxSizeET);
         configETs.add(minSizeET);
         configETs.add(maxRotationET);
         configETs.add(minRotationET);
         configETs.add(sessionTapNumET);
+        configETs.add(sessionNameET);
+        configETs.add(usernameET);
+        configETs.add(sessionTapNumET);
+        configETs.add(dwellTimeET);
+        configETs.add(doubleTapTimeET);
 
         int[] configETsIDs = new int[]{R.id.maxSizeInputText, R.id.minSizeInputText, R.id.maxRotationInputText, R.id.minRotationInputText, R.id.numTapsSessionET};
 
@@ -164,8 +189,19 @@ public class ConfigurationActivity extends AppCompatActivity {
         sessionNameET.setText(sessionName);
         usernameET.setText(username);
 
-        for (int i = 0; i < configETs.size(); i++) {
-            EditText ET = configETs.get(i);
+        for (EditText ET : configETs) {
+            ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        hideKeyboard(v);
+                    }
+                }
+            });
+        }
+
+        for (int i = 0; i < configParamETs.size(); i++) {
+            EditText ET = configParamETs.get(i);
             int finalI = i;
             ET.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -182,6 +218,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                     if (!s.toString().isEmpty()) {
                         try {
                             valueET = Integer.parseInt(s.toString());
+                            ET.setError(null);
                         } catch (Exception e) {
                             ET.setError("");
                         }
@@ -193,7 +230,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                                 ET.setError("Must be greater than Min. size!");
                             }
                             if (valueET >= minBound) {
-                                configETs.get(1).setError(null);
+                                configParamETs.get(1).setError(null);
                             }
                             maxBound = valueET;
                             break;
@@ -202,7 +239,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                                 ET.setError("Must be lesser than Max. size!");
                             }
                             if (valueET <= maxBound) {
-                                configETs.get(0).setError(null);
+                                configParamETs.get(0).setError(null);
                             }
                             minBound = valueET;
                             break;
@@ -211,7 +248,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                                 ET.setError("Must be greater than Min. rotation!");
                             }
                             if (valueET >= minRotationDegree) {
-                                configETs.get(3).setError(null);
+                                configParamETs.get(3).setError(null);
                             }
                             maxRotationDegree = valueET;
                             break;
@@ -220,7 +257,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                                 ET.setError("Must be lesser than Max. rotation!");
                             }
                             if (valueET <= maxRotationDegree) {
-                                configETs.get(2).setError(null);
+                                configParamETs.get(2).setError(null);
                             }
                             minRotationDegree = valueET;
                             break;

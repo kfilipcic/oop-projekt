@@ -36,5 +36,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        doubleTapTestingMenuButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Intent intent = new Intent(v.getContext(), DoubleTapActivity.class);
+                startActivity(intent);
+                return true;
+            }
+        });
     }
 }

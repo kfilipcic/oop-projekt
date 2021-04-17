@@ -117,17 +117,35 @@ public class LongTapActivity extends TapActivity {
         editor.putFloat(getString(R.string.dwell_time_file_key), dwellTime);
     }
 
-    private class dwellTimeTask extends AsyncTask {
-        @Override
-        protected Object doInBackground(Object[] objects) {
-            return null;
-        }
-    }
-
     @Override
     public void drawNewObject(float x, float y, int objectType) {
-        super.drawNewObject(x, y, objectType);
+        if (myCanvas.geometryObject == null) {
+            myCanvas.setGeometryObject(new GeometryObject());
+        }
+        if (myCanvas.geometryObject.isInside(x, y)) {
+            myCanvas.setTargetHit(true);
+        } else {
+            myCanvas.setTargetHit(false);
+        }
         myCanvas.getGeometryObject().setTapSuccessful(myCanvas.getTargetHit() && dwellTimeSuccess);
+        if (myCanvas.geometryObject.getTapSuccessful()) {
+            myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.correct_bg));
+        } else {
+            myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.incorrect_bg));
+        }
+        myCanvas.invalidate();
+        switch (objectType) {
+            case 0:
+                myCanvas.setGeometryObject(new Circle(myCanvas.getWidth(), myCanvas.getHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
+                break;
+            case 1:
+                Boolean isSquare = true;
+                myCanvas.setGeometryObject(new Rectangle(myCanvas.getWidth(), myCanvas.getHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree(), isSquare));
+                break;
+            case 2:
+                myCanvas.setGeometryObject(new Triangle(myCanvas.getWidth(), myCanvas.getHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
+                break;
+        }
     }
 
     @Override
