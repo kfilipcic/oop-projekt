@@ -12,13 +12,14 @@ import android.view.View;
 import java.util.Random;
 
 public class MyCanvas extends View {
-    private int minBound = 10;
-    private int maxBound = 500;
+    private int minBound = 100;
+    private int maxBound = 400;
     private int rndLeft = 0;
     private int rndRight = 0;
     private int rndTop = 0;
     private int rndBottom = 0;
-    private int minRotationDegree, maxRotationDegree = 0;
+    private int minRotationDegree = 0;
+    private int maxRotationDegree = 360;
 
     private int tapNum;
     RectF rndRect;
@@ -55,24 +56,14 @@ public class MyCanvas extends View {
         super.onDraw(canvas);
         Random rnd = new Random();
 
-
-        //rect.set(100, 50, 300, 300);
-
-
-        //System.out.println(String.valueOf(rndRight-rndLeft) + " " + String.valueOf(rndBottom-rndTop));
-
         if (onCreate) {
-            //generateNewRandomRect(true);
             paint.setColor(Color.BLACK);
             paint.setStrokeWidth(3);
             canvas.drawPaint(paint);
-            //int randomColor = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
             paint.setColor(getResources().getColor(R.color.object_color));
 
             onCreate = false;
         }
-
-        //canvas.drawColor(Color.BLACK);
 
         switch (objectType) {
             // Circle

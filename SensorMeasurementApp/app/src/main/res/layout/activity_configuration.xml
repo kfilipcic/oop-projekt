@@ -90,6 +90,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <CheckBox
+        android:id="@+id/doubleTapCB"
+        android:layout_width="200dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="200dp"
+        android:layout_marginTop="580dp"
+        android:text="@string/double_tap_CB"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <EditText
         android:id="@+id/sessionNameInputText"
         android:layout_width="180dp"
@@ -281,22 +292,22 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/backConfigurationButton"
-        android:layout_width="118dp"
-        android:layout_height="79dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="620dp"
-        android:text="@string/back_btn"
+        android:id="@+id/startSessionConfigurationButton"
+        android:layout_width="171dp"
+        android:layout_height="78dp"
+        android:layout_marginStart="200dp"
+        android:layout_marginTop="644dp"
+        android:text="@string/start_new_session_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/startSessionConfigurationButton"
-        android:layout_width="167dp"
-        android:layout_height="81dp"
-        android:layout_marginStart="200dp"
-        android:layout_marginTop="620dp"
-        android:text="@string/start_new_session_btn"
+        android:id="@+id/backConfigurationButton"
+        android:layout_width="118dp"
+        android:layout_height="79dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="644dp"
+        android:text="@string/back_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

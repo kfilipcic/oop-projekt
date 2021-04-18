@@ -35,6 +35,11 @@ public class ConfigurationActivity extends AppCompatActivity {
     String interactionTypeString;
     float dwellTime;
     float doubleTapTime;
+    int canvasWidth;
+    int canvasHeight;
+    int canvasShorterSide;
+    boolean createNewObjectAfterFail;
+    CheckBox doubleTapCB;
 
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -56,17 +61,28 @@ public class ConfigurationActivity extends AppCompatActivity {
         }
 
         // Fetch relevant data from Shared Preferences
-        String objectTypesString = sharedPreferences.getString(getString(R.string.shapes_cb_file_key), "01");
-        minBound = sharedPreferences.getInt(getString(R.string.size_min_bound_file_key), 10);
-        maxBound = sharedPreferences.getInt(getString(R.string.size_max_bound_file_key), 500);
+        String objectTypesString = sharedPreferences.getString(getString(R.string.shapes_cb_file_key), "111");
+        minBound = sharedPreferences.getInt(getString(R.string.size_min_bound_file_key), 100);
+        maxBound = sharedPreferences.getInt(getString(R.string.size_max_bound_file_key), 400);
         minRotationDegree = sharedPreferences.getInt(getString(R.string.rotation_min_bound_file_key), 0);
-        maxRotationDegree = sharedPreferences.getInt(getString(R.string.rotation_max_bound_file_key), 0);
+        maxRotationDegree = sharedPreferences.getInt(getString(R.string.rotation_max_bound_file_key), 180);
         sessionName = sharedPreferences.getString(getString(R.string.session_name_file_key), "default");
         username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
-        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), -1);
+        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), 0);
         newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
         dwellTime = sharedPreferences.getFloat(getString(R.string.dwell_time_file_key), 0);
         doubleTapTime = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), 0);
+        createNewObjectAfterFail = sharedPreferences.getBoolean(getString(R.string.double_tap_cb_file_key), true);
+
+        // Get Canvas width/height information to handle
+        // min/max bounds
+        canvasWidth = sharedPreferences.getInt(getString(R.string.canvas_width_file_key), -1);
+        canvasHeight = sharedPreferences.getInt(getString(R.string.canvas_height_file_key), -1);
+        if (canvasWidth < canvasHeight) {
+            canvasShorterSide = canvasWidth;
+        } else {
+            canvasShorterSide = canvasHeight;
+        }
 
         EditText maxSizeET = findViewById(R.id.maxSizeInputText);
         EditText minSizeET = findViewById(R.id.minSizeInputText);
@@ -83,6 +99,7 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         TextView doubleTapTimeTV = findViewById(R.id.doubleTapTimeTV);
         EditText doubleTapTimeET = findViewById(R.id.doubleTapTimeET);
+        doubleTapCB = findViewById(R.id.doubleTapCB);
 
         Button backBtn = findViewById(R.id.backConfigurationButton);
         Button startNewSessionBtn = findViewById(R.id.startSessionConfigurationButton);
@@ -111,7 +128,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                             dwellTimeET.setError(null);
                         } catch (Exception e) {
                             System.err.println("Error while parsing float from EditText! (dwellTimeET)");
-                            dwellTimeET.setError("Invalid value!");
+                            dwellTimeET.setError(getString(R.string.invalid_value_error_msg));
                         }
                     }
                 }
@@ -124,6 +141,10 @@ public class ConfigurationActivity extends AppCompatActivity {
         if (interactionTypeString.equals("double tap")) {
             doubleTapTimeTV.setEnabled(true);
             doubleTapTimeET.setEnabled(true);
+            doubleTapCB.setEnabled(true);
+
+            doubleTapCB.setChecked(createNewObjectAfterFail);
+
             doubleTapTimeET.setText(String.valueOf(doubleTapTime));
 
             doubleTapTimeET.addTextChangedListener(new TextWatcher() {
@@ -145,7 +166,7 @@ public class ConfigurationActivity extends AppCompatActivity {
                             dwellTimeET.setError(null);
                         } catch (Exception e) {
                             System.err.println("Error while parsing float from EditText! (doubleTapTimeET)");
-                            dwellTimeET.setError("Invalid value!");
+                            dwellTimeET.setError(getString(R.string.invalid_value_error_msg));
                         }
                     }
                 }
@@ -153,6 +174,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         } else {
             doubleTapTimeTV.setEnabled(false);
             doubleTapTimeET.setEnabled(false);
+            doubleTapCB.setEnabled(false);
         }
 
         // Create array containing EditTexts for min/max value
@@ -220,47 +242,62 @@ public class ConfigurationActivity extends AppCompatActivity {
                             valueET = Integer.parseInt(s.toString());
                             ET.setError(null);
                         } catch (Exception e) {
-                            ET.setError("");
+                            ET.setError(getString(R.string.invalid_value_error_msg));
                         }
                     }
 
                     switch (finalI) {
+                        // Max size ET
                         case 0:
                             if (valueET < minBound) {
-                                ET.setError("Must be greater than Min. size!");
+                                ET.setError(getString(R.string.max_size_error_msg));
                             }
                             if (valueET >= minBound) {
                                 configParamETs.get(1).setError(null);
                             }
+                            // If it can't theoretically fit on screen,
+                            // size value is invalid
+                            if (2*valueET >= canvasShorterSide) {
+                                ET.setError(getString(R.string.too_big_value_error_msg));
+                            }
                             maxBound = valueET;
                             break;
+                        // Min size ET
                         case 1:
                             if (valueET > maxBound) {
-                                ET.setError("Must be lesser than Max. size!");
+                                ET.setError(getString(R.string.min_size_error_msg));
                             }
                             if (valueET <= maxBound) {
                                 configParamETs.get(0).setError(null);
                             }
+                            // If it can't theoretically fit on screen,
+                            // size value is invalid
+                            if (2*valueET >= canvasShorterSide) {
+                                ET.setError(getString(R.string.too_big_value_error_msg));
+                            }
                             minBound = valueET;
                             break;
+                        // Max rotation ET
                         case 2:
                             if (valueET < minRotationDegree) {
-                                ET.setError("Must be greater than Min. rotation!");
+                                ET.setError(getString(R.string.max_rot_error_msg));
                             }
                             if (valueET >= minRotationDegree) {
                                 configParamETs.get(3).setError(null);
                             }
                             maxRotationDegree = valueET;
                             break;
+                        // Min rotation ET
                         case 3:
                             if (valueET > maxRotationDegree) {
-                                ET.setError("Must be lesser than Max. rotation!");
+                                ET.setError(getString(R.string.min_rot_error_msg));
                             }
                             if (valueET <= maxRotationDegree) {
                                 configParamETs.get(2).setError(null);
                             }
                             minRotationDegree = valueET;
                             break;
+                        // Session tap number ET
                         case 4:
                             sessionTapNum = valueET;
                             break;
@@ -326,8 +363,7 @@ public class ConfigurationActivity extends AppCompatActivity {
             }
         });
 
-        objectTypes = SingleTapActivity.stringToBoolArray(objectTypesString);
-
+        objectTypes = TapActivity.stringToBoolArray(objectTypesString);
 
         int[] objectTypeIds = new int[]{R.id.circleCB, R.id.squaresCB, R.id.trianglesCB};
 
@@ -356,30 +392,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         }
 
         return result;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        System.out.println("onDestroy ConfigurationActivity");
-        //editor.commit();
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        System.out.println("onPause ConfigurationActivity");
-
-    }
-
-    private class SharedPreferencesAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            editor.commit();
-            return null;
-        }
     }
 
     @Override
@@ -447,7 +459,8 @@ public class ConfigurationActivity extends AppCompatActivity {
     }
 
     private Boolean settingsValid() {
-        if (maxBound >= minBound && maxRotationDegree >= minRotationDegree) {
+        if (maxBound >= minBound && canvasShorterSide > 2*minBound &&
+            canvasShorterSide > 2*maxBound && maxRotationDegree >= minRotationDegree) {
             return true;
         }
         return false;
@@ -464,6 +477,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putString(getString(R.string.username_file_key), username);
         editor.putInt(getString(R.string.session_tapnum_file_key), sessionTapNum);
         editor.putBoolean(getString(R.string.new_settings_boolean_file_key), newSettings);
+        editor.putBoolean(getString(R.string.double_tap_cb_file_key), doubleTapCB.isChecked());
 
         if (interactionTypeString.equals("long tap")) {
             editor.putFloat(getString(R.string.dwell_time_file_key), dwellTime);

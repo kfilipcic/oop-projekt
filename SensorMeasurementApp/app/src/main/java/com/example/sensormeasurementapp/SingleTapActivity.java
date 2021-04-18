@@ -68,8 +68,9 @@ public class SingleTapActivity extends TapActivity {
                         }
 
                         myCanvas.setTapNum(myCanvas.getTapNum() + 1);
+                        checkAndSetPressAnywhereTextViewVisibility();
                         drawNewObject(x, y, myCanvas.getObjectType());
-                        logToCsvFile(x, y);
+                        if (myCanvas.getTapNum() > 0) logToCsvFile(x, y, -1, -1);
                         break;
                 }
                 //myCanvas.invalidate();

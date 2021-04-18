@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SensorMeasurementApp</string>
+    <string name="app_name">Tap Interactions Testing App</string>
     <string name="configMenuItemString">Configuration</string>
     <string name="shapesConfigTitle">Shapes:</string>
     <string name="rotationConfigTitle">The degree to which objects can be rotated:</string>
@@ -16,11 +16,21 @@
     <string name="TapNumSessionText">Number of taps per session:</string>
     <string name="dwell_time_TV">Dwell time (s):</string>
     <string name="double_tap_time_TV">Double tap time (s):</string>
+    <string name="double_tap_CB">Create new object after fail</string>
+
+    <string name="pressAnywhereTV">Press anywhere to start session</string>
+
+    <string name="max_size_error_msg">Must be greater than Min. size!</string>
+    <string name="min_size_error_msg">Must be less than Max. size!</string>
+    <string name="max_rot_error_msg">Must be greater than Min. rotation!</string>
+    <string name="min_rot_error_msg">Must be less than Max. rotation!</string>
+    <string name="too_big_value_error_msg">Value too big!</string>
+    <string name="invalid_value_error_msg">Invalid value!</string>
 
     <string name="save_settings_dialog_msg">Start new session with these settings?</string>
     <string name="invalid_settings_dialog_msg">Invalid settings! Enter valid values and try again.</string>
-    <string name="save_btn_text">Save</string>
-    <string name="dont_save_btn_text">Don\'t Save</string>
+    <string name="save_btn_text">Yes</string>
+    <string name="dont_save_btn_text">No, continue previous</string>
     <string name="ok_btn_text">OK</string>
     <string name="cancel_btn_text">Cancel</string>
     <string name="back_btn">Back</string>
@@ -38,12 +48,17 @@
     <string name="interaction_type_file_key">interactionType</string>
     <string name="dwell_time_file_key">dwellTime</string>
     <string name="double_tap_time_file_key">doubleTapTime</string>
+    <string name="double_tap_cb_file_key">doubleTapCB</string>
+    <string name="canvas_width_file_key">canvasWidth</string>
+    <string name="canvas_height_file_key">canvasHeight</string>
 
     <string name="session_end_toast_msg">No session in progress!</string>
 
-    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,objectRotation,interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,dwellTime(s),doubleTapTime(s),isTargetHit,isTapSuccessful,tapTime(ms)</string>
+    <string name="log_name">tap_interactions_log</string>
+    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,xTouch2,yTouch2,objectRotation,interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,dwellTime(s),doubleTapTime(s),createObjectAfterFail(double tap),isTargetHit,isTapSuccessful,tapTime(ms)</string>
 
     <string name="single_tap_menu_btn">Single tap testing</string>
     <string name="long_tap_menu_btn">Long tap testing</string>
     <string name="double_tap_menu_btn">Double tap testing</string>
+    <string name="main_menu_title">Select testing mode</string>
 </resources>

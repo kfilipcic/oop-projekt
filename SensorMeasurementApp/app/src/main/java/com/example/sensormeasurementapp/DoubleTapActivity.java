@@ -14,7 +14,7 @@ import java.util.Random;
 
 public class DoubleTapActivity extends TapActivity {
     float doubleTapTime;
-    float defaultDoubleTapTime = 5.0f;
+    float defaultDoubleTapTime = 0.5f;
     Handler doubleTapTimerHandler = new Handler();
     int doubleTapSuccess = 0;
     Long startDoubleTapTime = null;
@@ -22,6 +22,7 @@ public class DoubleTapActivity extends TapActivity {
     float y1;
     float x2;
     float y2;
+    boolean createNewObjectAfterFail;
 
     Runnable doubleTapTimer = new Runnable() {
         @Override
@@ -33,16 +34,11 @@ public class DoubleTapActivity extends TapActivity {
                 long millis = SystemClock.elapsedRealtime() - startDoubleTapTime;
 
                 if (millis > (long)(doubleTapTime * 1000)) {
-                    doubleTapSuccess = -1;
-                    System.out.println("Double tap fail" + doubleTapTime);
+                    //doubleTapSuccess = -1;
                     startDoubleTapTime = null;
-                    //generateObjectAndLog(x1, y1, -1, -1);
+                    startTapTime = null;
+                    generateObjectAndLog(x1, y1, -1, -1);
                     doubleTapTimerHandler.removeCallbacks(this);
-                }
-                if (doubleTapSuccess != 0) {
-                    if (doubleTapSuccess == 1) {
-                        doubleTapTimerHandler.removeCallbacks(this);
-                    }
                 }
                 doubleTapTimerHandler.postDelayed(this, 0);
             }
@@ -51,6 +47,7 @@ public class DoubleTapActivity extends TapActivity {
 
     private void generateObjectAndLog(float x1, float y1, float x2, float y2) {
         touchCnt++;
+        boolean wasObjectNull = myCanvas.geometryObject == null;
         Random rnd = new Random();
         ArrayList<Integer> objectTypesRandom = new ArrayList<Integer>();
         for (int i = 0; i < objectTypes.size(); i++) {
@@ -63,7 +60,16 @@ public class DoubleTapActivity extends TapActivity {
         } else {
             myCanvas.setObjectType(objectTypesRandom.get(rnd.nextInt(objectTypesRandom.size())));
         }
-        drawNewObject(x1, y1, x2, y2, myCanvas.getObjectType());
+        if (createNewObjectAfterFail || (x2 > -1 && y2 > -1)) {
+            drawNewObject(x1, y1, x2, y2, myCanvas.getObjectType());
+        }
+        checkAndSetPressAnywhereTextViewVisibility();
+
+        if (!wasObjectNull) {
+            myCanvas.setTapNum(myCanvas.getTapNum() + 1);
+            logToCsvFile(x1,y1, x2, y2);
+        }
+
     }
 
     @Override
@@ -75,7 +81,7 @@ public class DoubleTapActivity extends TapActivity {
         myCanvas.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (myCanvas.getTapNum() >= sessionTapNum) {
+                if (myCanvas.getTapNum() >= sessionTapNum-1) {
                     Toast.makeText(DoubleTapActivity.this, getString(R.string.session_end_toast_msg), Toast.LENGTH_SHORT).show();
                     return true;
                 }
@@ -88,12 +94,10 @@ public class DoubleTapActivity extends TapActivity {
                                 y2 = event.getY();
                                 if (doubleTapSuccess == 0) {
                                     doubleTapSuccess = 1;
-                                    System.out.println("Double tap success!" + doubleTapTime);
                                     doubleTapTimerHandler.removeCallbacks(doubleTapTimer,0);
                                     startDoubleTapTime = null;
                                 }
                             } else {
-                                System.out.println("ACTION DOWN startTapTime: ");
                                 startTapTime = SystemClock.elapsedRealtime();
                                 x1 = event.getX();
                                 y1 = event.getY();
@@ -103,24 +107,25 @@ public class DoubleTapActivity extends TapActivity {
 
                     case MotionEvent.ACTION_UP:
                         if (myCanvas.geometryObject != null) {
-                            // First action up in double tap
                             if (startDoubleTapTime == null && startTapTime != null) {
+                                // First action up in double tap
                                 if (doubleTapSuccess == 0) {
                                     startDoubleTapTime = SystemClock.elapsedRealtime();
                                     doubleTapTimerHandler.postDelayed(doubleTapTimer, 0);
+                                // Second action up in double tap
                                 } else {
-                                    generateObjectAndLog(x1, y1, x2, y2);
                                     tapTime = SystemClock.elapsedRealtime() - startTapTime;
+                                    generateObjectAndLog(x1, y1, x2, y2);
+
                                     startTapTime = null;
                                     startDoubleTapTime = null;
                                     doubleTapSuccess = 0;
+
                                 }
                             }
                         } else {
-                            System.out.println("GEOM OBJ IS NULL");
                             generateObjectAndLog(event.getX(), event.getY(), event.getX(), event.getY());
                         }
-                        System.out.println("ACTION UP: startDoubleTapTime.isNull" + startDoubleTapTime);
                         break;
                 }
                 //myCanvas.invalidate();
@@ -139,9 +144,9 @@ public class DoubleTapActivity extends TapActivity {
             myCanvas.setTargetHit(false);
         }
 
-        myCanvas.getGeometryObject().setTapSuccessful(myCanvas.getTargetHit() && doubleTapSuccess == 1);
+        boolean isTapSuccessful = myCanvas.getTargetHit() && doubleTapSuccess == 1;
 
-        if (myCanvas.geometryObject.getTapSuccessful()) {
+        if (isTapSuccessful) {
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.correct_bg));
         } else {
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.incorrect_bg));
@@ -161,23 +166,36 @@ public class DoubleTapActivity extends TapActivity {
                 myCanvas.setGeometryObject(new Triangle(myCanvas.getWidth(), myCanvas.getHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
                 break;
         }
+
+        myCanvas.geometryObject.setTapSuccessful(isTapSuccessful);
     }
 
     @Override
     public void fetchConfigurationDataFromSharedPreferences() {
         super.fetchConfigurationDataFromSharedPreferences();
         doubleTapTime = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), defaultDoubleTapTime);
+        createNewObjectAfterFail = sharedPreferences.getBoolean(getString(R.string.double_tap_cb_file_key), true);
     }
 
     @Override
     public void commitConfigurationDataToSharedPreferences() {
         super.commitConfigurationDataToSharedPreferences();
         editor.putFloat(getString(R.string.double_tap_time_file_key), doubleTapTime);
+        editor.putBoolean(getString(R.string.double_tap_cb_file_key), createNewObjectAfterFail);
+    }
+
+    public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2) {
+        doubleTapTimeString = String.valueOf(doubleTapTime);
+        doubleTapCreateNewObjectCBString = String.valueOf(createNewObjectAfterFail);
+        super.logToCsvFile(xTouch, yTouch, xTouch2, yTouch2);
     }
 
     @Override
-    public void logToCsvFile(float xTouch, float yTouch) {
-        doubleTapTimeString = String.valueOf(doubleTapTime);
-        super.logToCsvFile(xTouch, yTouch);
+    protected void checkAndSetPressAnywhereTextViewVisibility() {
+        if (myCanvas.geometryObject == null && sessionTapNum > 0) {
+            pressAnywhereTV.setVisibility(View.VISIBLE);
+        } else {
+            pressAnywhereTV.setVisibility(View.GONE);
+        }
     }
 }

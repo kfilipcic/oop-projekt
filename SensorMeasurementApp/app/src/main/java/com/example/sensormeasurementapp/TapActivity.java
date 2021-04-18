@@ -3,6 +3,7 @@ package com.example.sensormeasurementapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +12,10 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,8 +40,10 @@ public class TapActivity extends AppCompatActivity {
     boolean newSettings;
     String dwellTimeString = "null";
     String doubleTapTimeString = "null";
+    String doubleTapCreateNewObjectCBString = "null";
+    TextView pressAnywhereTV;
 
-    public void logToCsvFile(float xTouch, float yTouch) {
+    public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2) {
         // If this value is null, it is probably
         // the first tap, so don't log
         if (myCanvas.getTargetHit() == null) {
@@ -47,7 +54,11 @@ public class TapActivity extends AppCompatActivity {
             String currentDateAndTime = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS").format(new Date());
             File path = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOCUMENTS);
-            File file = new File(path + "/" + sessionName +".csv");
+            // Create one log for everything
+            File file = new File(path + "/" + getString(R.string.log_name) +".csv");
+            // Creating log for every different session
+            //File file = new File(path + "/" + sessionName +".csv");
+
             // If file doesn't exist, then create it
             if (!file.exists()) {
                 // Create header for new log file
@@ -65,14 +76,25 @@ public class TapActivity extends AppCompatActivity {
             String objectTypeString = "null";
             String objectRotationValueString = "null";
             String tapSuccessfulString = "null";
+            String xTouch2String = "null";
+            String yTouch2String = "null";
 
             circleRadiusValue = String.valueOf(myCanvas.getGeometryObject().getRadius());
             centerXString = String.valueOf(myCanvas.getGeometryObject().getCenterX());
             centerYString = String.valueOf(myCanvas.getGeometryObject().getCenterY());
             objectTypeString = myCanvas.getGeometryObject().getObjectTypeString();
             objectRotationValueString = String.valueOf(myCanvas.getGeometryObject().getRotationValue());
+
+            // Only long and double tapping mode have this info
+            // (for single tap if target is hit is enough to know it's been a successful tap)
             if (myCanvas.getGeometryObject().getTapSuccessful() != null) {
                 tapSuccessfulString = String.valueOf(myCanvas.getGeometryObject().getTapSuccessful());
+            }
+            // If logging a double tap, these values should be positive
+            // and therefore should be logged
+            if (xTouch2 > -1 && yTouch2 > -1) {
+                xTouch2String = String.valueOf(xTouch2);
+                yTouch2String = String.valueOf(xTouch2);
             }
 
             String delimiter = ",";
@@ -80,11 +102,12 @@ public class TapActivity extends AppCompatActivity {
             // Create new CSV record row as string with appropriate data
             content = currentDateAndTime + delimiter + username + delimiter + sessionName + delimiter + objectTypeString + delimiter
                     + centerXString + delimiter + centerYString + delimiter + circleRadiusValue + delimiter
-                    + xTouch + delimiter + yTouch + delimiter + objectRotationValueString + delimiter + interactionTypeString + delimiter
+                    + xTouch + delimiter + yTouch + delimiter + xTouch2String + delimiter + yTouch2String + delimiter
+                    + objectRotationValueString + delimiter + interactionTypeString + delimiter
                     + String.valueOf(sessionTapNum) + delimiter
                     + String.valueOf(myCanvas.getMinBound()) + delimiter + String.valueOf(myCanvas.getMaxBound()) + delimiter
                     + String.valueOf(myCanvas.getMinRotationDegree()) + delimiter + String.valueOf(myCanvas.getMaxRotationDegree()) + delimiter
-                    + dwellTimeString + delimiter + doubleTapTimeString + delimiter
+                    + dwellTimeString + delimiter + doubleTapTimeString + delimiter + doubleTapCreateNewObjectCBString + delimiter
                     + String.valueOf(myCanvas.getTargetHit()) + delimiter + tapSuccessfulString + delimiter + String.valueOf(tapTime) + "\n";
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
@@ -148,33 +171,43 @@ public class TapActivity extends AppCompatActivity {
     }
 
     public void fetchConfigurationDataFromSharedPreferences() {
-        cbValuesString = sharedPreferences.getString(getString(R.string.shapes_cb_file_key), "01");
+        cbValuesString = sharedPreferences.getString(getString(R.string.shapes_cb_file_key), "111");
         myCanvas.setMinBound(sharedPreferences.getInt(getString(R.string.size_min_bound_file_key), 10));
         myCanvas.setMaxBound(sharedPreferences.getInt(getString(R.string.size_max_bound_file_key), 500));
         myCanvas.setMinRotationDegree(sharedPreferences.getInt(getString(R.string.rotation_min_bound_file_key), 0));
         myCanvas.setMaxRotationDegree(sharedPreferences.getInt(getString(R.string.rotation_max_bound_file_key), 0));
         sessionName = sharedPreferences.getString(getString(R.string.session_name_file_key), "default");
         username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
-        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), -1);
+        sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), 0);
         newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
+    }
+
+    protected void checkAndSetPressAnywhereTextViewVisibility() {
+        if (myCanvas.getTapNum() < 0 && sessionTapNum > 0) {
+            pressAnywhereTV.setVisibility(View.VISIBLE);
+        } else {
+            pressAnywhereTV.setVisibility(View.GONE);
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_single_tap);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
-        setContentView(R.layout.activity_single_tap);
+        setContentView(R.layout.activity_tap);
+
+        pressAnywhereTV = findViewById(R.id.pressAnywhereTV);
+
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
 
         myCanvas = (MyCanvas) findViewById(R.id.my_canvas);
-
+        myCanvas.setTapNum(-1);
 
         fetchConfigurationDataFromSharedPreferences();
-        myCanvas.setTapNum(0);
+        checkAndSetPressAnywhereTextViewVisibility();
 
         objectTypes = stringToBoolArray(cbValuesString);
 
@@ -194,6 +227,8 @@ public class TapActivity extends AppCompatActivity {
         editor.putString(getString(R.string.shapes_cb_file_key), boolArrayToString(objectTypes));
         editor.putString(getString(R.string.session_name_file_key), sessionName);
         editor.putBoolean(getString(R.string.new_settings_boolean_file_key), false);
+        editor.putInt(getString(R.string.canvas_width_file_key), myCanvas.getWidth());
+        editor.putInt(getString(R.string.canvas_height_file_key), myCanvas.getHeight());
     }
 
     @Override
@@ -214,12 +249,20 @@ public class TapActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         fetchConfigurationDataFromSharedPreferences();
+        checkAndSetPressAnywhereTextViewVisibility();
         if (newSettings) {
-            myCanvas.setTapNum(0);
+            myCanvas.setTapNum(-1);
             newSettings = false;
         }
         objectTypes = stringToBoolArray(cbValuesString);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
     }
 }

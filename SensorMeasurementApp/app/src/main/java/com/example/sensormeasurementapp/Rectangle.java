@@ -60,13 +60,9 @@ public class Rectangle extends GeometryObject {
 
         Random rnd = new Random();
         right = bottom = 0;
-        //minRotationDegree = maxRotationDegree = 0;
-        //circleRadius = 100;
 
         left = rnd.nextInt(x);
         top = rnd.nextInt(x);
-
-        //System.out.println("left: " + left);
 
         while((right-left) < minBound || (right-left) > maxBound || right >= x || (isSquare && top + (right-left) >= y)) {
             left = rnd.nextInt(x);

@@ -18,7 +18,7 @@ import java.util.Random;
 public class LongTapActivity extends TapActivity {
     Boolean dwellTimeSuccess = null;
     float dwellTime;
-    float defaultDwellTime = 1.5f;
+    float defaultDwellTime = 1f;
     Handler dwellTimerHandler = new Handler();
     Vibrator vibrator;
 
@@ -27,9 +27,7 @@ public class LongTapActivity extends TapActivity {
         public void run() {
             long millis = SystemClock.elapsedRealtime() - startTapTime;
 
-            System.out.println("dwellTime: " + dwellTime + " millis: " + millis);
             if (millis >= (long)(dwellTime * 1000)) {
-                System.out.println("dwellTimer run()");
                 // Vibrate for 500 milliseconds
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -95,8 +93,9 @@ public class LongTapActivity extends TapActivity {
                         }
 
                         myCanvas.setTapNum(myCanvas.getTapNum() + 1);
+                        checkAndSetPressAnywhereTextViewVisibility();
                         drawNewObject(x, y, myCanvas.getObjectType());
-                        logToCsvFile(x, y);
+                        if (myCanvas.getTapNum() > 0) logToCsvFile(x, y);
                         break;
                 }
                 //myCanvas.invalidate();
@@ -127,8 +126,8 @@ public class LongTapActivity extends TapActivity {
         } else {
             myCanvas.setTargetHit(false);
         }
-        myCanvas.getGeometryObject().setTapSuccessful(myCanvas.getTargetHit() && dwellTimeSuccess);
-        if (myCanvas.geometryObject.getTapSuccessful()) {
+        boolean isTapSuccessful = myCanvas.getTargetHit() && dwellTimeSuccess;
+        if (isTapSuccessful) {
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.correct_bg));
         } else {
             myCanvas.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.incorrect_bg));
@@ -146,11 +145,11 @@ public class LongTapActivity extends TapActivity {
                 myCanvas.setGeometryObject(new Triangle(myCanvas.getWidth(), myCanvas.getHeight(), myCanvas.getMinBound(), myCanvas.getMaxBound(), myCanvas.getMinRotationDegree(), myCanvas.getMaxRotationDegree()));
                 break;
         }
+        myCanvas.geometryObject.setTapSuccessful(isTapSuccessful);
     }
 
-    @Override
     public void logToCsvFile(float xTouch, float yTouch) {
         dwellTimeString = String.valueOf(dwellTime);
-        super.logToCsvFile(xTouch, yTouch);
+        super.logToCsvFile(xTouch, yTouch, -1, -1);
     }
 }
