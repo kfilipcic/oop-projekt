@@ -1,12 +1,15 @@
 package com.example.sensormeasurementapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -42,6 +45,8 @@ public class TapActivity extends AppCompatActivity {
     String doubleTapTimeString = "null";
     String doubleTapCreateNewObjectCBString = "null";
     TextView pressAnywhereTV;
+    boolean newSessionIntentBoolean;
+    int configIntentResultCode = 100;
 
     public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2) {
         // If this value is null, it is probably
@@ -179,7 +184,11 @@ public class TapActivity extends AppCompatActivity {
         sessionName = sharedPreferences.getString(getString(R.string.session_name_file_key), "default");
         username = sharedPreferences.getString(getString(R.string.username_file_key), "default");
         sessionTapNum = sharedPreferences.getInt(getString(R.string.session_tapnum_file_key), 0);
-        newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
+        if (newSessionIntentBoolean) {
+            newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
+        } else {
+            newSettings = false;
+        }
     }
 
     protected void checkAndSetPressAnywhereTextViewVisibility() {
@@ -194,6 +203,7 @@ public class TapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        newSessionIntentBoolean = getIntent().hasExtra(getString(R.string.start_new_session_intent_boolean_file_key));
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
         setContentView(R.layout.activity_tap);
@@ -239,7 +249,7 @@ public class TapActivity extends AppCompatActivity {
                 intent.putExtra(getString(R.string.interaction_type_file_key), interactionTypeString);
                 commitConfigurationDataToSharedPreferences();
                 editor.apply();
-                startActivity(intent);
+                startActivityForResult(intent, configIntentResultCode);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -249,11 +259,10 @@ public class TapActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         fetchConfigurationDataFromSharedPreferences();
         checkAndSetPressAnywhereTextViewVisibility();
-        if (newSettings) {
+        if (newSettings && newSessionIntentBoolean) {
             myCanvas.setTapNum(-1);
             newSettings = false;
         }
@@ -261,8 +270,19 @@ public class TapActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
+    protected void onPause() {
+        super.onPause();
+        newSessionIntentBoolean = false;
+    }
 
-        super.onBackPressed();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == configIntentResultCode) {
+            if (resultCode == configIntentResultCode) {
+                newSessionIntentBoolean = data.getBooleanExtra(getString(R.string.start_new_session_intent_boolean_file_key), false);
+            }
+        }
     }
 }

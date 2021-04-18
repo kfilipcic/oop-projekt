@@ -40,6 +40,7 @@ public class ConfigurationActivity extends AppCompatActivity {
     int canvasShorterSide;
     boolean createNewObjectAfterFail;
     CheckBox doubleTapCB;
+    int configIntentResultCode = 100;
 
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -347,6 +348,8 @@ public class ConfigurationActivity extends AppCompatActivity {
                     newSettings = true;
                     saveNewSettings();
                     newSettings = false;
+
+                    putIntentExtra();
                     finish();
                 } else {
                     showInvalidValuesErrorDialog();
@@ -394,6 +397,12 @@ public class ConfigurationActivity extends AppCompatActivity {
         return result;
     }
 
+    private void putIntentExtra() {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra(getString(R.string.start_new_session_intent_boolean_file_key), true);
+        setResult(configIntentResultCode, returnIntent);
+    }
+
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
@@ -410,6 +419,9 @@ public class ConfigurationActivity extends AppCompatActivity {
                             newSettings = true;
                             saveNewSettings();
                             newSettings = false;
+
+                            // Notify TapActivity that new settings are applied
+                            putIntentExtra();
                             finish();
                         } else {
                             dialog.dismiss();
@@ -477,6 +489,7 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putString(getString(R.string.username_file_key), username);
         editor.putInt(getString(R.string.session_tapnum_file_key), sessionTapNum);
         editor.putBoolean(getString(R.string.new_settings_boolean_file_key), newSettings);
+
         editor.putBoolean(getString(R.string.double_tap_cb_file_key), doubleTapCB.isChecked());
 
         if (interactionTypeString.equals("long tap")) {
@@ -488,6 +501,5 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         editor.commit();
     }
-
 }
 

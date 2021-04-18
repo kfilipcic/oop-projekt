@@ -51,6 +51,7 @@
     <string name="double_tap_cb_file_key">doubleTapCB</string>
     <string name="canvas_width_file_key">canvasWidth</string>
     <string name="canvas_height_file_key">canvasHeight</string>
+    <string name="start_new_session_intent_boolean_file_key">configIntentBoolean</string>
 
     <string name="session_end_toast_msg">No session in progress!</string>
 
