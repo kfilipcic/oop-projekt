@@ -56,7 +56,7 @@
     <string name="session_end_toast_msg">No session in progress!</string>
 
     <string name="log_name">tap_interactions_log</string>
-    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,xTouch2,yTouch2,objectRotation,interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,dwellTime(s),doubleTapTime(s),createObjectAfterFail(double tap),isTargetHit,isTapSuccessful,tapTime(ms)</string>
+    <string name="log_file_header">timeStamp,username,sessionName,objectType,xCenter,yCenter,radius,xTouch,yTouch,xTouch2,yTouch2,touchSurface,touchSurface2,objectRotation(°),interactionType,sessionTapNum,minSizeConfig,maxSizeConfig,minRotationConfig,maxRotationConfig,dwellTimeConfig(s),doubleTapTimeConfig(s),isTargetHit,isTapSuccessful,tapTime(ms),firstTapTime(ms),doubleTapTime(ms),secondTapTime(ms)</string>
 
     <string name="single_tap_menu_btn">Single tap testing</string>
     <string name="long_tap_menu_btn">Long tap testing</string>

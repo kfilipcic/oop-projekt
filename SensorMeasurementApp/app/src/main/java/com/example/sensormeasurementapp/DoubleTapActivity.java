@@ -1,6 +1,5 @@
 package com.example.sensormeasurementapp;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -8,20 +7,26 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class DoubleTapActivity extends TapActivity {
-    float doubleTapTime;
+    float doubleTapTimeConfig;
     float defaultDoubleTapTime = 0.5f;
     Handler doubleTapTimerHandler = new Handler();
     int doubleTapSuccess = 0;
     Long startDoubleTapTime = null;
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+    Long startFirstTapTime = null;
+    Long startSecondTapTime = null;
+    Long doubleTapTime;
+    Long firstTapTime = null;
+    Long secondTapTime = null;
+
+    float x1 = -1;
+    float y1 = -1;
+    float x2 = -1;
+    float y2 = -1;
+    float touchSurface2;
     boolean createNewObjectAfterFail;
 
     Runnable doubleTapTimer = new Runnable() {
@@ -33,12 +38,12 @@ public class DoubleTapActivity extends TapActivity {
             } else {
                 long millis = SystemClock.elapsedRealtime() - startDoubleTapTime;
 
-                if (millis > (long)(doubleTapTime * 1000)) {
-                    //doubleTapSuccess = -1;
-                    startDoubleTapTime = null;
-                    startTapTime = null;
-                    generateObjectAndLog(x1, y1, -1, -1);
-                    doubleTapTimerHandler.removeCallbacks(this);
+                if (millis > (long)(doubleTapTimeConfig * 1000)) {
+                    doubleTapSuccess = -1;
+                    //startDoubleTapTime = null;
+                    //startTapTime = null;
+                    //generateObjectAndLog(x1, y1, -1, -1);
+                    //doubleTapTimerHandler.removeCallbacks(this);
                 }
                 doubleTapTimerHandler.postDelayed(this, 0);
             }
@@ -60,7 +65,7 @@ public class DoubleTapActivity extends TapActivity {
         } else {
             myCanvas.setObjectType(objectTypesRandom.get(rnd.nextInt(objectTypesRandom.size())));
         }
-        if (createNewObjectAfterFail || (x2 > -1 && y2 > -1)) {
+        if (x2 > -1 && y2 > -1) {
             drawNewObject(x1, y1, x2, y2, myCanvas.getObjectType());
         }
         checkAndSetPressAnywhereTextViewVisibility();
@@ -89,39 +94,61 @@ public class DoubleTapActivity extends TapActivity {
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         if (myCanvas.geometryObject != null) {
-                            if (startDoubleTapTime != null) {
-                                x2 = event.getX();
-                                y2 = event.getY();
-                                if (doubleTapSuccess == 0) {
-                                    doubleTapSuccess = 1;
-                                    doubleTapTimerHandler.removeCallbacks(doubleTapTimer,0);
-                                    startDoubleTapTime = null;
-                                }
-                            } else {
-                                startTapTime = SystemClock.elapsedRealtime();
+                            // First action down in double tap
+                            if (startDoubleTapTime == null) {
                                 x1 = event.getX();
                                 y1 = event.getY();
+                                touchSurface = event.getSize();
+
+                                startTapTime = SystemClock.elapsedRealtime();
+                                startFirstTapTime = SystemClock.elapsedRealtime();
+                            // Second action down in double tap
+                            } else {
+                                myCanvas.paint.setColor(getResources().getColor(R.color.object_color));
+                                x2 = event.getX();
+                                y2 = event.getY();
+                                touchSurface2 = event.getSize();
+
+                                doubleTapTimerHandler.removeCallbacks(doubleTapTimer,0);
+                                doubleTapTime = SystemClock.elapsedRealtime() - startDoubleTapTime;
+                                if (doubleTapTime < (long)(doubleTapTimeConfig*1000)) {
+                                    doubleTapSuccess = 1;
+                                } else {
+                                    doubleTapSuccess = -1;
+                                }
+                                startDoubleTapTime = null;
+
+                                startSecondTapTime = SystemClock.elapsedRealtime();
                             }
                         }
                         break;
 
                     case MotionEvent.ACTION_UP:
                         if (myCanvas.geometryObject != null) {
-                            if (startDoubleTapTime == null && startTapTime != null) {
-                                // First action up in double tap
-                                if (doubleTapSuccess == 0) {
-                                    startDoubleTapTime = SystemClock.elapsedRealtime();
-                                    doubleTapTimerHandler.postDelayed(doubleTapTimer, 0);
-                                // Second action up in double tap
-                                } else {
-                                    tapTime = SystemClock.elapsedRealtime() - startTapTime;
-                                    generateObjectAndLog(x1, y1, x2, y2);
+                            // First action up in double tap
+                            if (x2 < 0 && y2 < 0) {
+                                startDoubleTapTime = SystemClock.elapsedRealtime();
+                                doubleTapTimerHandler.postDelayed(doubleTapTimer, 0);
+                                firstTapTime = SystemClock.elapsedRealtime() - startFirstTapTime;
 
-                                    startTapTime = null;
-                                    startDoubleTapTime = null;
-                                    doubleTapSuccess = 0;
+                                myCanvas.paint.setColor(getResources().getColor(R.color.after_first_tap_object_color));
+                                myCanvas.invalidate();
+                            // Second action up in double tap
+                            } else {
+                                tapTime = SystemClock.elapsedRealtime() - startTapTime;
+                                secondTapTime = SystemClock.elapsedRealtime() - startSecondTapTime;
 
-                                }
+                                generateObjectAndLog(x1, y1, x2, y2);
+
+                                x1 = y1 = x2 = y2 = -1;
+                                startTapTime = null;
+                                startDoubleTapTime = null;
+
+                                firstTapTime = null;
+                                secondTapTime = null;
+                                doubleTapTime = null;
+
+                                doubleTapSuccess = 0;
                             }
                         } else {
                             generateObjectAndLog(event.getX(), event.getY(), event.getX(), event.getY());
@@ -173,21 +200,18 @@ public class DoubleTapActivity extends TapActivity {
     @Override
     public void fetchConfigurationDataFromSharedPreferences() {
         super.fetchConfigurationDataFromSharedPreferences();
-        doubleTapTime = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), defaultDoubleTapTime);
-        createNewObjectAfterFail = sharedPreferences.getBoolean(getString(R.string.double_tap_cb_file_key), true);
+        doubleTapTimeConfig = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), defaultDoubleTapTime);
     }
 
     @Override
     public void commitConfigurationDataToSharedPreferences() {
         super.commitConfigurationDataToSharedPreferences();
-        editor.putFloat(getString(R.string.double_tap_time_file_key), doubleTapTime);
-        editor.putBoolean(getString(R.string.double_tap_cb_file_key), createNewObjectAfterFail);
+        editor.putFloat(getString(R.string.double_tap_time_file_key), doubleTapTimeConfig);
     }
 
     public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2) {
-        doubleTapTimeString = String.valueOf(doubleTapTime);
-        doubleTapCreateNewObjectCBString = String.valueOf(createNewObjectAfterFail);
-        super.logToCsvFile(xTouch, yTouch, xTouch2, yTouch2);
+        doubleTapTimeStringConfig = String.valueOf(doubleTapTimeConfig);
+        super.logToCsvFile(xTouch, yTouch, xTouch2, yTouch2, touchSurface, touchSurface2);
     }
 
     @Override

@@ -38,8 +38,6 @@ public class ConfigurationActivity extends AppCompatActivity {
     int canvasWidth;
     int canvasHeight;
     int canvasShorterSide;
-    boolean createNewObjectAfterFail;
-    CheckBox doubleTapCB;
     int configIntentResultCode = 100;
 
     public void hideKeyboard(View view) {
@@ -73,7 +71,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         newSettings = sharedPreferences.getBoolean(getString(R.string.new_settings_boolean_file_key), false);
         dwellTime = sharedPreferences.getFloat(getString(R.string.dwell_time_file_key), 0);
         doubleTapTime = sharedPreferences.getFloat(getString(R.string.double_tap_time_file_key), 0);
-        createNewObjectAfterFail = sharedPreferences.getBoolean(getString(R.string.double_tap_cb_file_key), true);
 
         // Get Canvas width/height information to handle
         // min/max bounds
@@ -100,7 +97,6 @@ public class ConfigurationActivity extends AppCompatActivity {
 
         TextView doubleTapTimeTV = findViewById(R.id.doubleTapTimeTV);
         EditText doubleTapTimeET = findViewById(R.id.doubleTapTimeET);
-        doubleTapCB = findViewById(R.id.doubleTapCB);
 
         Button backBtn = findViewById(R.id.backConfigurationButton);
         Button startNewSessionBtn = findViewById(R.id.startSessionConfigurationButton);
@@ -142,9 +138,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         if (interactionTypeString.equals("double tap")) {
             doubleTapTimeTV.setEnabled(true);
             doubleTapTimeET.setEnabled(true);
-            doubleTapCB.setEnabled(true);
-
-            doubleTapCB.setChecked(createNewObjectAfterFail);
 
             doubleTapTimeET.setText(String.valueOf(doubleTapTime));
 
@@ -175,7 +168,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         } else {
             doubleTapTimeTV.setEnabled(false);
             doubleTapTimeET.setEnabled(false);
-            doubleTapCB.setEnabled(false);
         }
 
         // Create array containing EditTexts for min/max value
@@ -489,8 +481,6 @@ public class ConfigurationActivity extends AppCompatActivity {
         editor.putString(getString(R.string.username_file_key), username);
         editor.putInt(getString(R.string.session_tapnum_file_key), sessionTapNum);
         editor.putBoolean(getString(R.string.new_settings_boolean_file_key), newSettings);
-
-        editor.putBoolean(getString(R.string.double_tap_cb_file_key), doubleTapCB.isChecked());
 
         if (interactionTypeString.equals("long tap")) {
             editor.putFloat(getString(R.string.dwell_time_file_key), dwellTime);

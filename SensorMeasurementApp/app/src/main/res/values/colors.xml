@@ -10,4 +10,5 @@
     <color name="correct_bg">#49D742</color>
     <color name="incorrect_bg">#E50A2C</color>
     <color name="object_color">#3266a8</color>
+    <color name="after_first_tap_object_color">#fccf03</color>
 </resources>

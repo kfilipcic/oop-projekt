@@ -67,6 +67,7 @@ public class LongTapActivity extends TapActivity {
 
                     case MotionEvent.ACTION_UP:
                         dwellTimerHandler.removeCallbacks(dwellTimer);
+                        touchSurface = event.getSize();
                         float x = event.getX();
                         float y = event.getY();
                         tapTime = SystemClock.elapsedRealtime() - startTapTime;
@@ -150,6 +151,6 @@ public class LongTapActivity extends TapActivity {
 
     public void logToCsvFile(float xTouch, float yTouch) {
         dwellTimeString = String.valueOf(dwellTime);
-        super.logToCsvFile(xTouch, yTouch, -1, -1);
+        super.logToCsvFile(xTouch, yTouch, -1, -1, touchSurface, -1);
     }
 }

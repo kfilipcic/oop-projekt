@@ -4,12 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -17,8 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -42,13 +37,19 @@ public class TapActivity extends AppCompatActivity {
     int sessionTapNum;
     boolean newSettings;
     String dwellTimeString = "null";
+    String doubleTapTimeStringConfig = "null";
+
+    String touchSurface2String = "null";
+    String firstTapTimeString = "null";
+    String secondTapTimeString = "null";
     String doubleTapTimeString = "null";
-    String doubleTapCreateNewObjectCBString = "null";
+
     TextView pressAnywhereTV;
     boolean newSessionIntentBoolean;
     int configIntentResultCode = 100;
+    float touchSurface;
 
-    public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2) {
+    public void logToCsvFile(float xTouch, float yTouch, float xTouch2, float yTouch2, float touchSurface, float touchSurface2) {
         // If this value is null, it is probably
         // the first tap, so don't log
         if (myCanvas.getTargetHit() == null) {
@@ -97,9 +98,16 @@ public class TapActivity extends AppCompatActivity {
             }
             // If logging a double tap, these values should be positive
             // and therefore should be logged
+            if (this instanceof DoubleTapActivity) {
+                touchSurface2String = String.valueOf(((DoubleTapActivity) this).touchSurface2);
+                firstTapTimeString = String.valueOf(((DoubleTapActivity) this).firstTapTime);
+                secondTapTimeString = String.valueOf(((DoubleTapActivity) this).secondTapTime);
+                doubleTapTimeString = String.valueOf(((DoubleTapActivity) this).doubleTapTime);
+            }
             if (xTouch2 > -1 && yTouch2 > -1) {
                 xTouch2String = String.valueOf(xTouch2);
-                yTouch2String = String.valueOf(xTouch2);
+                yTouch2String = String.valueOf(yTouch2);
+                touchSurface2String = Float.toString(touchSurface2);
             }
 
             String delimiter = ",";
@@ -108,12 +116,14 @@ public class TapActivity extends AppCompatActivity {
             content = currentDateAndTime + delimiter + username + delimiter + sessionName + delimiter + objectTypeString + delimiter
                     + centerXString + delimiter + centerYString + delimiter + circleRadiusValue + delimiter
                     + xTouch + delimiter + yTouch + delimiter + xTouch2String + delimiter + yTouch2String + delimiter
+                    + Float.toString(touchSurface) + delimiter + touchSurface2String + delimiter
                     + objectRotationValueString + delimiter + interactionTypeString + delimiter
                     + String.valueOf(sessionTapNum) + delimiter
                     + String.valueOf(myCanvas.getMinBound()) + delimiter + String.valueOf(myCanvas.getMaxBound()) + delimiter
                     + String.valueOf(myCanvas.getMinRotationDegree()) + delimiter + String.valueOf(myCanvas.getMaxRotationDegree()) + delimiter
-                    + dwellTimeString + delimiter + doubleTapTimeString + delimiter + doubleTapCreateNewObjectCBString + delimiter
-                    + String.valueOf(myCanvas.getTargetHit()) + delimiter + tapSuccessfulString + delimiter + String.valueOf(tapTime) + "\n";
+                    + dwellTimeString + delimiter + doubleTapTimeStringConfig + delimiter
+                    + String.valueOf(myCanvas.getTargetHit()) + delimiter + tapSuccessfulString + delimiter
+                    + String.valueOf(tapTime) + delimiter + firstTapTimeString + delimiter + doubleTapTimeString + delimiter + secondTapTimeString + "\n";
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
             BufferedWriter bw = new BufferedWriter(fw);
